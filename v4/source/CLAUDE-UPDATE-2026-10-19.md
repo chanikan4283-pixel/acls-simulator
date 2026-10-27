@@ -350,3 +350,11 @@ Taken over from Codex (weekly limit reached). Backup of the files before this pa
 - **ECG "bobbing" fix**: `Trace.draw` now samples at ≤2 ms per point (sub-pixel), so narrow R waves are no longer aliased into varying heights on narrow canvases (the review strip). Procedure-cam strip sampled at ¼ px.
 - **Epinephrine cycle alert**: amber full-screen alert + alarm at 3 min ("EPINEPHRINE DUE"), red at 5 min ("OVERDUE"); LAST EPINEPHRINE tile pulses amber/red with "DUE"/"NOW"; cycle banner shows DUE/OVERDUE. Only during arrest.
 - Tests: tests/pass10.test.mjs (auscultation results, epi due/overdue). 106 pass.
+
+## Pass 11 (2026-10-27) — readability and tap targets
+- All small type scaled up in style.css (6–16 px → 10–18 px); drawer buttons ≥48 px tall, action cards ≥60 px, dock buttons ≥64 px, camera-nav 46 px.
+- Liquid-glass panels made more opaque (drawer ~90 %), so text stays readable over the 3D scene; lighter secondary text.
+- Drawer wider (min(430px,62%)); right HUD and status chips reposition while a panel is open; Sound/Voice/Shock chips hide while a panel is open; on ≤1300 px wide (iPad) the team caption hides under an open panel and dock sub-labels hide.
+- 3D role labels larger (150×34 px boxes) with darker backgrounds.
+- Monitor footer (Hint / Timeline / Finish) is sticky so it never scrolls out of view.
+- Tests unchanged: 106 pass.
