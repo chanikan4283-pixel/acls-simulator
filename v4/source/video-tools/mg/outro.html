@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="mg.css"><style>
+#ecg{position:absolute;inset:0}
+#h{top:360px;font-size:170px}
+#s{top:575px;font-size:46px;color:#e6f2f2}
+#f{top:690px;font-size:28px;color:#7f9599}
+#small{top:990px;font:500 20px Inter;color:#5f7478;letter-spacing:.06em}
+</style></head><body>
+<canvas id="ecg" width="1920" height="1080"></canvas>
+<div id="h" class="abs center big grad">ACLS sim</div>
+<div id="s" class="abs center sub">Learn the algorithm. Lead the team.</div>
+<div id="f" class="abs center sub">Anywhere · Any device · In 3D</div>
+<div id="small" class="abs center">Aligned with AHA 2025 adult ACLS · Educational preview · Not a substitute for certified training</div>
+<script src="common.js"></script><script>
+const c=$('ecg').getContext('2d');
+window.render=t=>{c.clearRect(0,0,1920,1080);
+ const a=eout(seg(t,.2,1.2));show($('h'),a,{y:(1-a)*30,blur:(1-a)*20,scale:.96+.04*a});
+ const b=eout(seg(t,.9,1.8));show($('s'),b,{y:(1-b)*20});const d=eout(seg(t,1.5,2.4));show($('f'),d,{y:(1-d)*16});show($('small'),eout(seg(t,2,3))*.9);
+ // faint heartbeat line under title
+ c.save();c.globalAlpha=.55*a;c.strokeStyle='#5fffe0';c.lineWidth=3;c.shadowColor='#5fffe0';c.shadowBlur=18;c.beginPath();const X=Math.min(1920,(t-.3)*900);for(let x=0;x<=X;x+=2){const y=860-ecgBeat(((x/520)%1))*120;x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();c.restore();
+ document.body.style.opacity=1-ease(seg(t,5.6,6.4));};
+render(0);
+</script></body></html>

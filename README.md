@@ -61,3 +61,11 @@ It's a single static file. Either:
 ## License
 
 MIT
+
+## v4 (Oct 2026) — new build
+
+**Play:** https://chanikan4283-pixel.github.io/acls-simulator/v4/
+
+- `v4/index.html` — the self-contained game (offline, iPad-friendly).
+- `v4/source/` — source modules, tests (`npm test`), build script (`node build.mjs`), change log and `CODEX-HANDOFF-2026-10-26.md`.
+- The v3 simulator above (root `index.html`) is unchanged.

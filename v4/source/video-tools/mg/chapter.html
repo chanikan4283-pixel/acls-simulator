@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="mg.css"><style>
+body{background:radial-gradient(ellipse at 50% 55%,#06272a 0%,#000 62%)}
+#k{top:420px}#h{top:470px;font-size:120px}
+#line{left:50%;top:640px;height:2px;width:600px;margin-left:-300px;background:linear-gradient(90deg,transparent,#5fffe0,transparent)}
+</style></head><body>
+<div id="k" class="abs center kick">KICK</div>
+<div id="h" class="abs center big grad">TITLE</div>
+<div id="line" class="abs"></div>
+<script src="common.js"></script><script>
+window.render=t=>{const a=eout(seg(t,0,.7));show($('k'),a,{y:(1-a)*14});show($('h'),a,{y:(1-a)*30,blur:(1-a)*18,scale:1.04-.04*a});
+ const l=eout(seg(t,.3,1.1));$('line').style.transform=`scaleX(${l})`;$('line').style.opacity=l;
+ document.body.style.opacity=1-ease(seg(t,1.9,2.4));};
+render(0);
+</script></body></html>

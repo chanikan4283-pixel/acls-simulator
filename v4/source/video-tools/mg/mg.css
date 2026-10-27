@@ -1,0 +1,9 @@
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000;color:#fff;font-family:'Inter Display','Inter',sans-serif;-webkit-font-smoothing:antialiased}
+.abs{position:absolute}
+.big{font-weight:700;letter-spacing:-.035em;line-height:1}
+.grad{background:linear-gradient(100deg,#ffffff 0%,#d8fff4 40%,#58e0c0 75%,#3aa7ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.kick{font:600 26px 'Inter';letter-spacing:.28em;text-transform:uppercase;color:#7fe6cf}
+.sub{font:500 40px 'Inter Display';color:#b9c8cc;letter-spacing:-.01em}
+.center{left:0;right:0;text-align:center}
+canvas#gl{position:absolute;inset:0}

@@ -1,0 +1,1 @@
+{"name":"acls-sim","version":"4.0.0-preview.5-en","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs","start":"python -m http.server 8765 --bind 127.0.0.1"}}

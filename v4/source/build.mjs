@@ -1,0 +1,11 @@
+import {buildIdentity,sha256} from './build-identity.mjs';
+import {readFile,writeFile} from 'node:fs/promises';
+const read=p=>readFile(new URL(p,import.meta.url),'utf8');
+const data=async(p,mime)=>`data:${mime};base64,${(await readFile(new URL(p,import.meta.url))).toString('base64')}`;
+const inputFiles=['index.html','style.css','build.mjs','build-identity.mjs','vendor/three.min.js','team-motion.js','pose.js','label-layout.js','trainer.js','clinical.js','scene.js','ecg.js','app.js','procedure-flow.js','practice.js','procedure-anim.js','twelve-lead.js'];
+const identity=buildIdentity(await Promise.all(inputFiles.map(async name=>[name,await readFile(new URL(name,import.meta.url))])));
+let html=(await read('index.html')).replace('<head>',`<head><meta name="acls-build" content="${identity.buildId}">`);const css=await read('style.css');let scene=await read('scene.js');
+const sources=[await read('vendor/three.min.js'),await read('team-motion.js'),await read('practice.js'),await read('procedure-flow.js'),await read('pose.js'),await read('label-layout.js'),await read('trainer.js'),await read('clinical.js'),scene,await read('ecg.js'),await read('procedure-anim.js'),await read('twelve-lead.js'),await read('app.js')];
+const js=sources.map((s,i)=>i<1?s:s.replace(/^import .*;\s*$/gm,'').replace(/\bexport /g,'')).join('\n;\n');
+html=html.replace('<link rel="stylesheet" href="style.css">',`<style>${css}</style>`).replace('<link rel="manifest" href="manifest.webmanifest">','').replace(/<script src="vendor\/three.min.js"><\/script>[\s\S]*?<script type="module" src="app.js"><\/script>/,`<script>${js.replaceAll('</script','<\\/script')}</script>`);
+await writeFile(new URL('play.html',import.meta.url),html);await writeFile(new URL('BUILD-MANIFEST.json',import.meta.url),JSON.stringify({schema:1,...identity,bundleSha256:sha256(html)},null,2)+'\n');console.log('Built self-contained play.html with source identity '+identity.buildId.slice(0,12));

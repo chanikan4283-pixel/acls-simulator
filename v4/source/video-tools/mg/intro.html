@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="mg.css"><style>
+#ecg{position:absolute;inset:0}
+#title{top:330px;font-size:190px}
+#tag{top:560px}
+#k{top:270px}
+#shot{left:50%;top:600px;width:1280px;height:720px;margin-left:-640px;border-radius:26px;overflow:hidden;box-shadow:0 60px 160px #00ffd022,0 0 0 1px #ffffff22;transform-origin:50% 0}
+#shot img{width:100%;height:100%;object-fit:cover}
+#glow{left:50%;top:640px;width:1600px;height:700px;margin-left:-800px;background:radial-gradient(ellipse at center,#18d8b055,transparent 65%);filter:blur(40px)}
+</style></head><body>
+<canvas id="ecg" width="1920" height="1080"></canvas>
+<div id="glow" class="abs"></div>
+<div id="k" class="abs center kick">AHA 2025 · Advanced Cardiovascular Life Support</div>
+<div id="title" class="abs center big grad">ACLS sim</div>
+<div id="tag" class="abs center sub">Resuscitation training. Reimagined in 3D.</div>
+<div id="shot" class="abs"><img id="img" src="IMG1"></div>
+<script src="common.js"></script><script>
+const c=$('ecg').getContext('2d');
+window.render=t=>{
+ c.clearRect(0,0,1920,1080);
+ // 0-3.2s: glowing ECG sweep across black, final big beat flash
+ const sweep=seg(t,0,2.6),fadeE=1-seg(t,3.0,3.8);
+ if(fadeE>0){c.save();c.globalAlpha=fadeE;c.lineWidth=5;c.lineJoin='round';c.shadowColor='#3fffd0';c.shadowBlur=26;c.strokeStyle='#8dffe2';c.beginPath();
+  const X=sweep*1920;for(let x=0;x<=X;x+=2){const ph=x/480;const amp=x>1300?2.2:1;const y=560-ecgBeat(ph%1)*230*amp;x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+  // leading dot
+  if(sweep<1){const ph=X/480;c.fillStyle='#fff';c.beginPath();c.arc(X,560-ecgBeat(ph%1)*230*(X>1300?2.2:1),9,0,7);c.fill();}
+  c.restore();}
+ const flash=Math.max(0,1-Math.abs(t-2.75)/.35);document.body.style.background=`rgb(${flash*30|0},${flash*60|0},${flash*55|0})`;
+ const tin=eout(seg(t,2.9,4.0));
+ show($('title'),tin,{y:(1-tin)*40-ease(seg(t,6,7.2))*190,blur:(1-tin)*24,scale:1-ease(seg(t,6,7.2))*.42});
+ show($('k'),eout(seg(t,3.5,4.4))*(1-ease(seg(t,5.8,6.4))),{y:(1-eout(seg(t,3.5,4.4)))*20});
+ const ti=eout(seg(t,4.1,5.0));show($('tag'),ti*(1-ease(seg(t,5.9,6.4))),{y:(1-ti)*30,blur:(1-ti)*10});
+ // 3D tilted gameplay screen rises
+ const s=ease(seg(t,6.0,8.6));const sh=$('shot');sh.style.opacity=s;
+ sh.style.transform=`perspective(1600px) translateY(${(1-s)*500-280*s}px) rotateX(${(1-s)*55+8*(1-seg(t,8.6,10))}deg) scale(${.82+.18*s})`;
+ $('glow').style.opacity=s*.9;
+};
+render(0);
+</script></body></html>

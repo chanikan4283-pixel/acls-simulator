@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="mg.css"><style>
+body{background:radial-gradient(ellipse at 50% 70%,#0b2a2c 0%,#000 60%)}
+#h{top:90px;font-size:120px}
+#s{top:240px}
+.dev{position:absolute;transform-style:preserve-3d}
+.screen{position:absolute;overflow:hidden;background:#000}
+.screen img{width:100%;height:100%;object-fit:cover;display:block}
+#ipad{left:560px;top:380px;width:800px;height:600px;border-radius:44px;background:#1c1f22;box-shadow:0 0 0 3px #3a3f44,0 50px 120px #000,0 0 120px #19e3b833}
+#ipad .screen{inset:26px;border-radius:20px}
+#mac{left:90px;top:470px;width:600px;height:400px}
+#mac .lid{position:absolute;left:0;top:0;width:600px;height:380px;border-radius:20px 20px 6px 6px;background:#1a1d20;box-shadow:0 0 0 2px #3a3f44}
+#mac .lid .screen{inset:14px 14px 22px 14px;border-radius:8px}
+#mac .base{position:absolute;left:-40px;top:378px;width:680px;height:20px;border-radius:0 0 22px 22px;background:linear-gradient(#cfd4d8,#7d848a)}
+#phone{left:1430px;top:480px;width:250px;height:510px;border-radius:46px;background:#1c1f22;box-shadow:0 0 0 3px #3a3f44,0 40px 90px #000}
+#phone .screen{inset:12px;border-radius:36px}
+#phone .screen img{object-position:38% 50%}
+.lab{position:absolute;font:600 30px 'Inter Display';color:#fff;text-align:center;width:100%;}
+#chips{top:1000px}
+.chip{display:inline-block;margin:0 10px;padding:10px 24px;border-radius:999px;border:1px solid #ffffff33;background:#ffffff0d;font:500 24px Inter;color:#cfe;backdrop-filter:blur(8px)}
+#tap{position:absolute;width:90px;height:90px;border-radius:50%;border:3px solid #fff;background:radial-gradient(circle,#fff8,#fff0 70%)}
+</style></head><body>
+<div id="h" class="abs center big grad">Play anywhere.</div>
+<div id="s" class="abs center sub">iPad · Mac · PC · Phone — right in the browser. Nothing to install.</div>
+<div id="mac" class="dev"><div class="lid"><div class="screen"><img src="IMG2"></div></div><div class="base"></div></div>
+<div id="phone" class="dev"><div class="screen"><img src="IMG3"></div></div>
+<div id="ipad" class="dev"><div class="screen"><img src="IMG1"></div><div id="tap"></div></div>
+<div id="chips" class="abs center"><span class="chip">Touch-first on iPad</span><span class="chip">Works offline</span><span class="chip">One self-contained file</span></div>
+<script src="common.js"></script><script>
+window.render=t=>{
+ const a=eout(seg(t,0,.9));show($('h'),a,{y:(1-a)*40,blur:(1-a)*16});
+ const b=eout(seg(t,.6,1.5));show($('s'),b,{y:(1-b)*24});
+ const ip=ease(seg(t,.4,1.8)),mc=ease(seg(t,1.0,2.4)),ph=ease(seg(t,1.4,2.8));
+ const drift=Math.sin(t*.8)*4;
+ $('ipad').style.opacity=ip;$('ipad').style.transform=`perspective(2000px) translateY(${(1-ip)*300}px) rotateX(${(1-ip)*30+4}deg) rotateY(${drift*.6}deg) scale(${.9+.1*ip})`;
+ $('mac').style.opacity=mc;$('mac').style.transform=`perspective(2000px) translateX(${(1-mc)*-260}px) rotateY(${22-6*mc}deg) translateY(${drift}px)`;
+ $('phone').style.opacity=ph;$('phone').style.transform=`perspective(2000px) translateX(${(1-ph)*260}px) rotateY(${-24+6*ph}deg) translateY(${-drift}px)`;
+ const tp=seg(t,3.2,3.9);const tap=$('tap');tap.style.left='520px';tap.style.top='330px';tap.style.opacity=t>3.2&&t<3.9?1-tp:0;tap.style.transform=`scale(${.4+.9*tp})`;
+ const c=eout(seg(t,2.8,3.6));show($('chips'),c,{y:(1-c)*30});
+ const out=1-ease(seg(t,6.2,7));document.body.style.opacity=out;
+};
+render(0);
+</script></body></html>
