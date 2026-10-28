@@ -272,3 +272,32 @@ body.lg #play-layout.panel-open #right-hud{right:calc(min(430px,62%) + 24px)}
 #monitor .monitor-footer{position:sticky;bottom:-20px;background:#122b32;padding:8px 0 10px;margin-top:auto;z-index:2}
 #monitor .monitor-footer button{min-height:48px;font-size:15px}
 #monitor :is(.vital small,.vital-label,.tile small){font-size:11.5px}
+/* pass 12 (28 Oct): Apple-style — info overlays translucent again, only tappable menus solid */
+:root{--ap-font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,systemThai,"Helvetica Neue",sans-serif}
+body,button,input,select,textarea{font-family:var(--ap-font)!important;letter-spacing:-.005em}
+/* non-tappable info: back to light frosted glass */
+body.lg :is(#team-caption,#situation-strip>span,#situation-strip>strong,#score-chip,#toast,#right-hud #cycle-banner,#lab-alert){background-color:rgba(20,40,46,.30)!important;-webkit-backdrop-filter:blur(20px) saturate(180%)!important;backdrop-filter:blur(20px) saturate(180%)!important;border:1px solid rgba(255,255,255,.22)!important;box-shadow:0 8px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.25)!important}
+body.lg #situation-strip>:is(span,strong){border-radius:999px!important;padding:6px 12px!important;font-weight:600}
+body.lg #team-caption{border-radius:18px!important}
+body.lg #right-hud #cycle-banner{border-radius:22px!important}
+#team-caption,#situation-strip>*,#cycle-banner{text-shadow:0 1px 3px rgba(0,0,0,.35)}
+/* tappable: clear, solid, Apple-like controls */
+body.lg #play-layout #drawer{border-radius:26px!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 24px 60px rgba(0,0,0,.35)!important}
+body.lg #drawer .action-grid button,body.lg #drawer .mc-card{border-radius:16px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.10)!important;box-shadow:none!important;transition:transform .12s ease,background .15s ease}
+body.lg #drawer .action-grid button:hover,body.lg #drawer .mc-card:hover{background:rgba(255,255,255,.16)!important}
+body.lg #drawer :is(.action-grid button,.mc-card,.chip,button):active{transform:scale(.97)}
+body.lg #drawer .chip{border-radius:999px!important;background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.12)!important}
+body.lg #drawer .chip.active,body.lg #drawer .mc-card.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important}
+body.lg #drawer :is(button.primary,#give-order,#pacer-btn){border-radius:14px!important;background:#30d1a8!important;color:#03241c!important;font-weight:700;border:0!important;box-shadow:0 6px 18px rgba(48,209,168,.35)!important}
+body.lg #drawer #defib-shock{border-radius:14px!important;background:#ff453a!important;color:#fff!important;border:0!important}
+body.lg #drawer #charge-btn{border-radius:14px!important;background:#ffd60a!important;color:#2a2200!important;border:0!important;font-weight:700}
+.section-label{letter-spacing:.04em!important;font-weight:600;color:rgba(235,245,245,.6)!important;text-transform:uppercase}
+.drawer-head b,#drawer-title{font-weight:700;letter-spacing:-.02em}
+body.lg #quick-actions button{border-radius:20px!important;font-weight:700;letter-spacing:-.01em}
+body.lg #quick-actions #resume-cpr:not(:disabled){background:rgba(48,209,168,.88)!important;color:#03241c!important;text-shadow:none}
+#dock{background:rgba(14,30,35,.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
+#dock button{border-radius:18px!important}
+#dock button b{font-weight:600;letter-spacing:-.01em}
+body.lg #dock button.active{background:rgba(255,255,255,.12)!important;box-shadow:none!important;border:1px solid rgba(255,255,255,.14)!important}
+#camera-nav{border-radius:999px!important}#camera-nav button{border-radius:999px!important}
+#monitor .monitor-footer button{border-radius:14px}

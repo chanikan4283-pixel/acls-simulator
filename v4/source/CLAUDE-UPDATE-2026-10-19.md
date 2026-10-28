@@ -358,3 +358,9 @@ Taken over from Codex (weekly limit reached). Backup of the files before this pa
 - 3D role labels larger (150×34 px boxes) with darker backgrounds.
 - Monitor footer (Hint / Timeline / Finish) is sticky so it never scrolls out of view.
 - Tests unchanged: 106 pass.
+
+## Pass 12 (2026-10-28) — Apple-style polish
+- Only tappable menus are solid (drawer, buttons, dock); information overlays (status pills, team caption, rhythm-check banner, toasts, lab alert) are translucent frosted glass again.
+- 3D role labels: translucent rounded pills with a hairline edge and sentence-case white text ("Compressions", "Meds / Defib"); they now pack to the left of the right-hand HUD so they are never hidden behind it.
+- System font stack (-apple-system / SF Pro, Inter fallback); pill chips; 14–26 px radii; filled primary actions (teal give/pacer, yellow charge, red shock); press-scale feedback; quieter section labels.
+- Tests unchanged: 106 pass.
