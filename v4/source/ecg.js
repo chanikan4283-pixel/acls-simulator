@@ -16,11 +16,15 @@ export function waveform(t,rhythm,hr=75,pacerRate=70){
  if(rhythm==='VF_COARSE')return waveform(t,'VF')*1.6;
  if(rhythm==='VF')return (.8+.2*Math.sin(t*1.7))*(.20*Math.sin(t*19+.7*Math.sin(t*2.1))+.16*Math.sin(t*31.2)+.08*Math.sin(t*47.5));
  if(rhythm==='ASYSTOLE')return .004*Math.sin(t*17);
- if(rhythm==='TORSADES')return (.3+.65*Math.pow(Math.sin(t*1.1),2))*Math.sin(t*22)*Math.cos(t*.65);
+ if(rhythm==='TORSADES')return (.22+.78*Math.pow(Math.sin(t*1.25),2))*Math.sin(t*23+1.4*Math.sin(t*1.25));
  if(rhythm==='AF'){let out=.018*Math.sin(t*37)+.012*Math.sin(t*53.7)+.009*Math.sin(t*71);for(const beat of afBeatTimes(t-.5,t+.1,hr))out+=narrow(t-beat,rr);return out;}
  if(rhythm==='MOBITZ1'||rhythm==='MOBITZ2'){
-  let out=0;const period=.8,n=Math.floor(t/period);for(let i=n-2;i<=n+1;i++){const step=mod(i,rhythm==='MOBITZ1'?4:3),p=i*period+.10,pr=.18+(rhythm==='MOBITZ1'?step*.06:0);out+=.12*gaussian(t,p,.032);if(step!==(rhythm==='MOBITZ1'?3:2))out+=narrow(t-(p+pr),period);}return out;
+  let out=0;const period=.8,n=Math.floor(t/period);for(let i=n-2;i<=n+1;i++){const step=mod(i,rhythm==='MOBITZ1'?4:3),p=i*period+.10,pr=rhythm==='MOBITZ1'?[.18,.27,.32,.34][step]:.18;/* Wenckebach: PR lengthens by smaller steps, so R-R shortens before the dropped beat */out+=.12*gaussian(t,p,.032);if(step!==(rhythm==='MOBITZ1'?3:2))out+=narrow(t-(p+pr),period);}return out;
  }
+ if(rhythm==='AFLUTTER'){// Typical flutter: 300/min sawtooth F waves (negative in lead II), 2:1 conduction → 150/min, no isoelectric baseline.
+  const f=mod(t,.2)/.2,saw=.13*(1-2*Math.min(1,f/.82))+(f>.82?.26*(f-.82)/.18:0);let out=saw;const q=phase(t,.4,.07);
+  out+=-.10*gaussian(q,-.023,.008)+.95*gaussian(q,0,.010)-.22*gaussian(q,.023,.010);return out;}
+ if(rhythm==='AVB1')return [-1,0,1].reduce((v,k)=>{const z=x+k*rr;return v+narrow(z,rr)+.12*gaussian(z,-.30,.032);},0);// PR ≈ 0.32 s, every P conducted
  if(rhythm==='CHB')return wide(x)+.12*gaussian(phase(t,.8,.10),0,.032);
  if(rhythm==='PACED_NO_CAPTURE')return waveform(t,'CHB',hr)+1.55*gaussian(phase(t,60/pacerRate,.24),0,.002);
  if(rhythm==='PACED'){const q=phase(t,rr,.30);return 1.55*gaussian(q,-.085,.002)+wide(q);}
@@ -40,7 +44,7 @@ export class Trace{
   const sub=Math.max(1,Math.ceil(1/(pxPerSec*.002)));let first=true;for(let i=0;i<w;i++){let peak=-1e9;for(let k=0;k<sub;k++){const xi=i+k/sub,t=start+xi/pxPerSec;const signal=waveform(t,rhythm,hr,pacerRate)+(cpr?.12*Math.sin(t*11.52):0);if(signal>peak)peak=signal;const y=h*.62-signal*voltage;if(first){x.moveTo(xi,y);first=false;}else x.lineTo(xi,y);}sig.push(peak);}x.stroke();
   // SYNC mode: the defibrillator marks each detected R wave (no marker on VF / asystole).
   if(sync&&!['VF','ASYSTOLE','VF_FINE','VF_COARSE'].includes(rhythm)){const win=Math.max(4,Math.round(pxPerSec*.12));x.fillStyle=this.paper?'#b0302a':'#ffffff';for(let i=win;i<sig.length-win;i++){if(sig[i]<.45)continue;let peak=true;for(let k=i-win;k<=i+win;k++)if(sig[k]>sig[i]){peak=false;break;}if(peak){const yy=h*.62-sig[i]*voltage-8;x.beginPath();x.moveTo(i-5,yy-9);x.lineTo(i+5,yy-9);x.lineTo(i,yy-1);x.closePath();x.fill();i+=win;}}x.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='right';x.fillText('SYNC',w-8,15);x.textAlign='left';}
-  if(rhythm==='PACED'||rhythm==='PACED_NO_CAPTURE'){const rr=60/(rhythm==='PACED'?Math.max(20,hr||70):pacerRate),offset=rhythm==='PACED'?.215:.24;x.beginPath();for(let n=Math.ceil((start-offset)/rr);n*rr+offset<=start+w/pxPerSec;n++){const xx=(n*rr+offset-start)*pxPerSec;x.moveTo(xx,h*.62+.3*voltage);x.lineTo(xx,h*.62-2.1*voltage);}x.save();x.strokeStyle=this.paper?'#1a1a1a':'#ffe066';x.lineWidth=2.4;x.stroke();x.fillStyle=this.paper?'#1a1a1a':'#ffe066';x.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='right';x.fillText(rhythm==='PACED'?'PACING · CAPTURE':'PACING · NO CAPTURE',w-8,28);x.restore();}
+  if(rhythm==='PACED'||rhythm==='PACED_NO_CAPTURE'){const rr=60/(rhythm==='PACED'?Math.max(20,hr||70):pacerRate),offset=rhythm==='PACED'?.215:.24;x.beginPath();for(let n=Math.ceil((start-offset)/rr);n*rr+offset<=start+w/pxPerSec;n++){const xx=(n*rr+offset-start)*pxPerSec;x.moveTo(xx,h*.62+.3*voltage);x.lineTo(xx,h*.62-2.1*voltage);}x.save();x.strokeStyle=this.paper?'#1a1a1a':'#ffe066';x.lineWidth=2.4;x.stroke();x.fillStyle=this.paper?'#1a1a1a':'#ffe066';x.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='right';if(!staticStrip)x.fillText(rhythm==='PACED'?'PACING · CAPTURE':'PACING · NO CAPTURE',w-8,28);x.restore();}
   x.fillStyle=this.paper?'#765b59':'#7fa59b';x.font=uiCanvasFont('10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='left';x.fillText(`II · 25 mm/s · ${10*effectiveGain} mm/mV`,10,15);
   for(let n=0;n<w/pxPerSec;n++){x.fillRect(n*pxPerSec,h-10,1,5);x.fillText(`${n}s`,n*pxPerSec+3,h-3);}
  }

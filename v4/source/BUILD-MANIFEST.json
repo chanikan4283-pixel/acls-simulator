@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "buildId": "a9c031f622925df85a46e686b6bc8c531a366d92b9ca835b9385457b874ced36",
+  "buildId": "3fc8a77543fefe1142ddca222829ca5a779d078dbf4724ad82194bb15677bb77",
   "sources": {
-    "app.js": "85c587b60f28c42bd53d6d68916e436ca46891a0cc5231f0cb2022f13cbb8150",
+    "app.js": "87ff27f19431355491eb7efc8b49fb3192c6cce2064767f52a02a1422c0d4662",
     "build-identity.mjs": "a56a311d9babecf34fe217a432674b218da5a6a89d1db2fc421078c4cd25569e",
     "build.mjs": "7d2df8b569ad42cbe298e413d068632775fe60847298da7bc16ac35f4dd49f2a",
-    "clinical.js": "742b86aa3ca994daad2ee2bd4ed5cb4191e0dd349ae91aee2666feedd88dc531",
-    "ecg.js": "6fb6ba8edd2255b5b0a4e62695cc9fa42bfdca9094e50afb9830f9fea346110a",
-    "feedback.js": "da2ba8734e427bc7def3292c15f5bbb1b3302899d32bee07cccaf62ecdbe3dcf",
-    "index.html": "249ddf74ece83b342eb379b47776a295ff5ffcc9925a4cc6f0756b0780c9fae8",
+    "clinical.js": "496e743385e5b632d7b43ab6228f6fd6d0963aeea026352bc5bc914fdacd98b1",
+    "ecg.js": "bdab0d78462c4fd4c80fb057e991a72c07b9e9ee641894e8da43a7eed8e11c23",
+    "feedback.js": "1217b2aa7666e8c432985d98f52b74c12cc2d1e0d8b8b4f8ea54540fc2472ab6",
+    "index.html": "abb35fbb2baf7b0d978b959f4370775750c4eebc2ea7b45262ffb17f5d529895",
     "label-layout.js": "227b6745016c4cdc017073f667ee9c379bb2e16a2e9af78f270e3546c8b45745",
     "pose.js": "58ab8adff73db8f805357c1ef8532924f721c8531eda60a2827ff463589e1e65",
     "practice.js": "5544a09bcd7e0fd930543c716908ef1e265103ff660eebfbc83b53ea73f26e74",
-    "procedure-anim.js": "db634fb98c4f1d9c4f85ecfe47818a11da3cade87046633a9a25c2584ca2ba3f",
-    "procedure-flow.js": "dd4f2b618e2906584c199be2b419f756cd7aedae6925b2417d9b3016233ccc18",
-    "scene.js": "2706fcd0ff421adf38b622e5a72d20c9b72e1ac5516e0750e1a1ca7c4e3b651d",
-    "style.css": "ec1528114d9ac97cdf8625272b0dd39a1285eba8b7539511a2d4c36934d913d2",
+    "procedure-anim.js": "e07dd2a9e400eb091f1ba8e01d52dab472f8261a2929947aef7f61f989e6344f",
+    "procedure-flow.js": "903b499fc9fffc71635479371a75d6e7241b0a577d8874c77bd052b57ab1d032",
+    "scene.js": "e98d36bf243917569d930d535295f6d61110f6f2ed578abc962a198c311abe89",
+    "style.css": "1ff5ab33ca9f42c39e243ff3b720afbdc4bb53e3959f3b1c9d49fd44796fc048",
     "team-motion.js": "af7209f8685b07c9015e04d3824c589d21b827d452126680ee0d6c594968c0ab",
     "trainer.js": "7bf470cc234c01540a9ae7586cc628600b982431391e69140ec81d8eb76ed876",
     "twelve-lead.js": "88cd4c5d3cd0971c3cdbf2055592179d701d842753ba701073c3fe283875dd5b",
     "vendor/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
   },
-  "bundleSha256": "615eb5e19f4d4b72ae9bc4e37c15e41fd8080a44b73fa8b5dbb7f60845498c71"
+  "bundleSha256": "3f12f3be437430f7d2d6c9a2c8b3f2520cac9f7a65b0bda4e37cf125787ede9d"
 }

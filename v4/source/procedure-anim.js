@@ -21,6 +21,13 @@ export const PROCEDURES={
   [3.2,'TWO fentanyl patches found — the old one was never removed!'],
   [5.4,'Gloves on: peel both off, fold sticky sides together, discard safely'],
   [8,'Wash the skin with water (no alcohol, no heat) · effect lasts hours: watch for recurrence']]},
+ intubate:{title:'Endotracheal intubation · direct laryngoscopy',duration:8.4,noStrip:true,steps:[
+  [0,'Pre-oxygenate · sniffing position (ear level with the sternal notch)'],
+  [1.3,'Blade in from the right, sweep the tongue to the left'],
+  [2.9,'Lift along the handle — never lever on the teeth — until the cords are seen'],
+  [4.6,'Pass the tube through the cords under vision · cuff just beyond'],
+  [6.3,'Stylet out · inflate the cuff · 21–23 cm at the teeth'],
+  [7.3,'Connect the bag → confirm with breath sounds and waveform ETCO₂']]},
  auscultate:{title:'Confirm tube placement · stethoscope',duration:11.5,noStrip:true,steps:[
   [0,'Tube in — listen before you trust it'],
   [.5,'Epigastrium first: no gurgling with the breath'],
@@ -166,6 +173,58 @@ const PA_DRAW={
   c.save();c.translate(440,-215);c.fillStyle='#ffffff';c.font=uiCanvasFont('bold 16px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(name,0,0);c.restore();c.restore();
   if(t<1.0){c.font=uiCanvasFont('bold 22px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#bff3e2';c.fillText('“'+(label||'Drug')+' — confirm?”',40,60);c.font=uiCanvasFont('15px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('“Confirmed.”',40,88);}
   if(t>1&&t<2.3)paCaption(c,'PUSH',560,60,'#ff9a8c');if(t>2.4&&t<3.5)paCaption(c,'FLUSH',560,60,'#8fd0ff');if(t>3.6)paCaption(c,'Limb up ↑',540,60,'#bff3e2');
+ },
+ intubate(c,t){{const g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,'#22363d');g.addColorStop(1,'#0f1c21');c.fillStyle=g;c.fillRect(0,0,720,420);}
+  /* Sagittal teaching view, patient supine, head on the left, feet to the right. Anterior (trachea) is up. */
+  const open=seg(t,1.0,1.6),sweep=seg(t,1.3,2.9),lift=seg(t,2.9,4.2),pass=seg(t,4.6,6.1),stylet=seg(t,6.3,6.9),cuff=seg(t,6.7,7.3),bag=seg(t,7.3,7.9),out=seg(t,6.9,7.5);
+  const ext=seg(t,0,1.0);
+  /* pillow + bed */
+  c.fillStyle='#98cbd1';c.fillRect(0,318,720,40);c.fillStyle='#e9f1ef';c.beginPath();c.ellipse(120,312,120,22,0,0,Math.PI*2);c.fill();
+  /* neck, chest */
+  c.fillStyle='#d9a988';c.beginPath();c.moveTo(250,205);c.lineTo(470,196);c.quadraticCurveTo(600,170,720,176);c.lineTo(720,318);c.lineTo(230,318);c.closePath();c.fill();
+  /* head (slightly extended) */
+  c.save();c.translate(200,250);c.rotate(-.10*ext);c.translate(-200,-250);
+  c.fillStyle='#e0b291';c.beginPath();c.ellipse(165,225,112,92,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#70727b';c.beginPath();c.ellipse(108,215,62,88,.25,Math.PI*.55,Math.PI*1.55);c.fill();
+  c.fillStyle='#e0b291';c.beginPath();c.moveTo(195,140);c.lineTo(214,112);c.lineTo(232,142);c.closePath();c.fill();/* nose */
+  c.fillStyle='#3a4b52';c.beginPath();c.ellipse(170,150,14,5,0,0,Math.PI*2);c.fill();/* closed eye */
+  c.restore();
+  /* airway lumen: mouth → pharynx → larynx; trachea anterior (upper), esophagus posterior (lower) */
+  const jaw=18*open+8*lift;
+  c.fillStyle='#5a2f33';c.beginPath();c.moveTo(238,150-jaw*.2);c.quadraticCurveTo(262,170,300,214);c.lineTo(352,214);c.lineTo(352,236);c.lineTo(292,238);c.quadraticCurveTo(250,232,246,196+jaw);c.closePath();c.fill();
+  c.fillStyle='#3b1f24';c.fillRect(352,200,300,22);/* trachea */
+  c.strokeStyle='#e8d9c9';c.lineWidth=3;for(let x=372;x<650;x+=22){c.beginPath();c.moveTo(x,198);c.lineTo(x,206);c.stroke();}/* tracheal rings (anterior) */
+  c.fillStyle='#4a2a2e';c.fillRect(352,230,300,9);/* esophagus (collapsed) */
+  c.font='11px sans-serif';c.fillStyle='#bfe3d8';c.fillText('trachea',600,192);c.fillStyle='#e9b6a8';c.fillText('esophagus',590,254);
+  /* tongue: swept and lifted by the blade */
+  c.fillStyle='#d98686';c.beginPath();c.ellipse(268-6*sweep,196+jaw*.5-10*lift,34-6*lift,20-5*lift,.55,0,Math.PI*2);c.fill();
+  /* epiglottis: lifts as the blade tip seats in the vallecula */
+  c.strokeStyle='#f0c9b5';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(338,216);c.lineTo(320-4*lift,214-16*lift+6*(1-lift));c.stroke();
+  /* vocal cords */
+  c.strokeStyle='#fff4e6';c.lineWidth=3;c.beginPath();c.moveTo(354,201);c.lineTo(354,221);c.stroke();
+  if(lift>.9&&pass<.2){c.strokeStyle='#8af0b5';c.lineWidth=2;c.beginPath();c.arc(354,211,16+3*Math.sin(t*8),0,Math.PI*2);c.stroke();c.fillStyle='#8af0b5';c.font='bold 13px sans-serif';c.fillText('cords in view',372,186);}
+  /* laryngoscope: Macintosh blade into the vallecula, handle up and toward the feet at ~45° */
+  if(sweep>0&&out<1){const k=sweep*(1-out),lx=14*lift*(1-out),ly=-16*lift*(1-out);
+   const bx=236+lx-40*(1-k),by=132+ly-70*(1-k);
+   c.strokeStyle='#c9d3d8';c.lineWidth=9;c.lineCap='round';c.beginPath();c.moveTo(bx,by);c.quadraticCurveTo(bx+18,by+62,bx+78,by+74);c.stroke();
+   c.strokeStyle='#4b6b80';c.lineWidth=20;c.beginPath();c.moveTo(bx,by);c.lineTo(bx+64,by-74);c.stroke();
+   c.fillStyle='#fff7c2';c.beginPath();c.arc(bx+70,by+72,4,0,Math.PI*2);c.fill();
+   if(lift>0&&lift<1){c.strokeStyle='#ffe2a8';c.lineWidth=3;c.beginPath();c.moveTo(bx+92,by-60);c.lineTo(bx+112,by-84);c.moveTo(bx+112,by-84);c.lineTo(bx+100,by-82);c.moveTo(bx+112,by-84);c.lineTo(bx+110,by-72);c.stroke();c.fillStyle='#ffe2a8';c.font='bold 12px sans-serif';c.fillText('lift up and away',bx+118,by-80);}}
+  /* endotracheal tube: advanced along the blade through the cords into the trachea */
+  if(pass>0){const P=[[250,96],[246,150],[272,196],[318,211],[360,211],[452,211]],L=[];let tot=0;for(let i=1;i<P.length;i++){const d=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);L.push(d);tot+=d;}
+   const at=d=>{d=Math.max(0,Math.min(tot,d));for(let i=0;i<L.length;i++){if(d<=L[i])return [P[i][0]+(P[i+1][0]-P[i][0])*d/L[i],P[i][1]+(P[i+1][1]-P[i][1])*d/L[i]];d-=L[i];}return P[P.length-1];};
+   const tip=tot*pass;c.strokeStyle='#eef6f2';c.lineWidth=9;c.lineJoin='round';c.lineCap='round';c.beginPath();for(let d=0;d<=tip;d+=6){const [x,y]=at(d);d?c.lineTo(x,y):c.moveTo(x,y-70*(1-pass));}c.stroke();
+   if(stylet<1){c.strokeStyle='#8a979e';c.lineWidth=2.5;c.beginPath();for(let d=0;d<=tip*(1-stylet);d+=6){const [x,y]=at(d);d?c.lineTo(x,y-0):c.moveTo(x,y-70*(1-pass)-60*stylet);}c.stroke();}
+   if(pass>=1){const [cx,cy]=at(tot-34);c.fillStyle=`rgba(150,215,255,${.35+.5*cuff})`;c.beginPath();c.ellipse(cx,cy,15,5+8*cuff,0,0,Math.PI*2);c.fill();
+    c.fillStyle='#20262a';c.fillRect(244,146,10,4);c.font='bold 12px sans-serif';c.fillStyle='#bfe3d8';c.fillText('22 cm at the teeth',262,146);
+    if(cuff>0&&cuff<1)paCaption(c,'cuff inflating',cx-30,cy-22,'#bfe3ff');}}
+  /* bag connected + first breaths */
+  if(bag>0){const sq=Math.max(0,Math.sin((t-7.5)*5));c.fillStyle='#89c9af';c.beginPath();c.ellipse(300,60-30*(1-bag),60*(1-.25*sq),30,-.15,0,Math.PI*2);c.fill();c.strokeStyle='#eef6f2';c.lineWidth=9;c.beginPath();c.moveTo(252,96);c.lineTo(262,78-30*(1-bag));c.stroke();
+   c.strokeStyle=`rgba(138,240,181,${.4+.6*sq})`;c.lineWidth=3;c.beginPath();c.moveTo(520,170-6*sq);c.quadraticCurveTo(610,150-10*sq,700,160-6*sq);c.stroke();c.fillStyle='#8af0b5';c.font='bold 13px sans-serif';c.fillText('chest rise',600,140);}
+  /* checklist */
+  const items=[['Pre-oxygenate · position',1.2],['Laryngoscopy · see cords',4.3],['Tube through cords',6.1],['Cuff up · 22 cm',7.3],['ETCO₂ waveform → attach',99]];
+  c.fillStyle='#0b171bcc';c.fillRect(510,262,198,22+items.length*22);items.forEach(([txt,at2],k)=>{const ok=t>=at2;c.font='12.5px sans-serif';c.fillStyle=ok?'#8af0b5':'#d5e2e4';c.fillText((ok?'✓ ':'○ ')+txt,520,282+k*22);});
+  c.font='11px sans-serif';c.fillStyle='#9fb6bb';c.fillText('Compressions continue · keep any pause for the tube under 10 s',20,404);
  },
  auscultate(c,t,{label='tube'}){{const g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,'#22363d');g.addColorStop(1,'#0f1c21');c.fillStyle=g;c.fillRect(0,0,720,420);}
   const vent=label==='tube'||label==='bvm',breathing=vent||label==='spont';
