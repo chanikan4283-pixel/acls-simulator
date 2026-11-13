@@ -1,3 +1,4 @@
+import {uiCanvasFont} from './pose.js';
 export const SIMULATION_SPEED=1;
 export function simulationDelta(seconds,paused=false){return paused?0:Math.max(0,seconds)*SIMULATION_SPEED;}
 export function cprInRange(rate,depth){return rate>=100&&rate<=120&&depth>=5&&depth<=6;}
@@ -151,9 +152,9 @@ function drawTorso(c,{x,y,angle,view,elapsed}){
  c.strokeStyle='#b88f74';c.lineWidth=2.4;c.beginPath();c.moveTo(218,202);c.quadraticCurveTo(160,226,112,246);c.moveTo(222,202);c.quadraticCurveTo(280,226,328,246);c.stroke();
  c.strokeStyle='#c49c81aa';c.lineWidth=1.6;for(let i=0;i<6;i++){const yy=88+i*22;c.beginPath();c.moveTo(206,yy);c.quadraticCurveTo(150,yy+6-i,100+i*4,yy+22+i*3);c.moveTo(234,yy);c.quadraticCurveTo(290,yy+6-i,340-i*4,yy+22+i*3);c.stroke();}
  c.fillStyle='#a77a63';for(const nx of [150,290]){c.beginPath();c.arc(nx,140,4,0,Math.PI*2);c.fill();}c.beginPath();c.arc(220,286,4,0,Math.PI*2);c.fill();
- c.fillStyle='#e7f2ef';c.font='bold 13px sans-serif';c.fillText('HEAD',202,24);c.font='12px sans-serif';c.fillText('Patient R',14,300);c.fillText('Patient L',366,300);
+ c.fillStyle='#e7f2ef';c.font=uiCanvasFont('bold 13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('HEAD',202,24);c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('Patient R',14,300);c.fillText('Patient L',366,300);
  // All targets faint; the selected window pulses.
- for(const [k,w] of Object.entries(POCUS_WINDOWS)){const tx=w.target[0]*W,ty=w.target[1]*H,active=k===view;c.strokeStyle=active?`rgba(124,237,210,${.55+.4*Math.sin(elapsed*4)})`:'#ffffff55';c.lineWidth=active?3:1.5;c.setLineDash(active?[]:[5,5]);c.beginPath();c.arc(tx,ty,active?26:18,0,Math.PI*2);c.stroke();c.setLineDash([]);if(active){c.fillStyle='#7cedd233';c.fill();c.fillStyle='#e7fff8';c.font='bold 12px sans-serif';const label=k==='cardiac'?'subcostal':'2nd–3rd ICS';c.fillText(label,tx-c.measureText(label).width/2,ty+42);}}
+ for(const [k,w] of Object.entries(POCUS_WINDOWS)){const tx=w.target[0]*W,ty=w.target[1]*H,active=k===view;c.strokeStyle=active?`rgba(124,237,210,${.55+.4*Math.sin(elapsed*4)})`:'#ffffff55';c.lineWidth=active?3:1.5;c.setLineDash(active?[]:[5,5]);c.beginPath();c.arc(tx,ty,active?26:18,0,Math.PI*2);c.stroke();c.setLineDash([]);if(active){c.fillStyle='#7cedd233';c.fill();c.fillStyle='#e7fff8';c.font=uiCanvasFont('bold 12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');const label=k==='cardiac'?'subcostal':'2nd–3rd ICS';c.fillText(label,tx-c.measureText(label).width/2,ty+42);}}
  // Probe with orientation marker.
  c.save();c.translate(x*W,y*H);c.rotate(angle*Math.PI/180);c.fillStyle='#1d3f4a';c.strokeStyle='#7cedd2';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-24,-9,48,18,6):c.rect(-24,-9,48,18);c.fill();c.stroke();c.fillStyle='#7cedd2';c.beginPath();c.arc(-17,0,3.5,0,Math.PI*2);c.fill();c.fillStyle='#7cedd255';c.fillRect(-22,9,44,4);c.restore();
 }
@@ -170,7 +171,7 @@ export function drawUltrasound(c,o){
  // Low-quality window: rib / gas shadowing hides the anatomy.
  if(quality<.98){c.save();c.globalAlpha=Math.min(.94,(1-quality)*1.15);c.fillStyle='#030405';c.fillRect(0,0,lung?500:W,H);c.globalAlpha=Math.min(.6,(1-quality));c.drawImage(speckleTexture(2),(elapsed*30)%40-20,0);c.restore();}
  // Screen furniture.
- c.fillStyle='#c7d4da';c.font='15px sans-serif';c.fillText(lung?'LINEAR · LUNG · B + M MODE':'PHASED · SUBCOSTAL 4-CHAMBER',14,22);c.font='13px sans-serif';c.fillText(`GAIN ${gain}%  ·  DEPTH ${lung?6:16} cm`,14,H-12);c.fillText('SYNTHETIC TRAINING',lung?300:560,H-12);
+ c.fillStyle='#c7d4da';c.font=uiCanvasFont('15px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(lung?'LINEAR · LUNG · B + M MODE':'PHASED · SUBCOSTAL 4-CHAMBER',14,22);c.font=uiCanvasFont('13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(`GAIN ${gain}%  ·  DEPTH ${lung?6:16} cm`,14,H-12);c.fillText('SYNTHETIC TRAINING',lung?300:560,H-12);
  c.fillStyle='#7cedd2';c.beginPath();c.arc(lung?20:250,lung?38:34,5,0,Math.PI*2);c.fill();
  for(let i=1;i<=4;i++){const yy=40+i*(H-70)/4;c.fillStyle='#9fb0b7';c.fillRect(lung?488:704,yy,10,2);}
 }
@@ -219,7 +220,7 @@ function drawCardiac(c,o,bright){
  c.restore();
  const grad=c.createLinearGradient(0,250,0,420);grad.addColorStop(0,'rgba(0,0,0,0)');grad.addColorStop(1,'rgba(0,0,0,.7)');c.fillStyle=grad;c.fillRect(0,0,720,440);
  c.restore();
- c.fillStyle='#d6e2e7';c.font='bold 13px sans-serif';for(const [t,lx,ly] of [['LIVER',190,80],['RV',412,226],['LV',426,318],['RA',268,214],['LA',250,300]])c.fillText(t,lx,ly);
+ c.fillStyle='#d6e2e7';c.font=uiCanvasFont('bold 13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');for(const [t,lx,ly] of [['LIVER',190,80],['RV',412,226],['LV',426,318],['RA',268,214],['LA',250,300]])c.fillText(t,lx,ly);
 }
 
 function drawLung(c,o,bright){
@@ -245,5 +246,5 @@ function drawLung(c,o,bright){
  // M-mode: scroll left, draw one new column per frame.
  if(!frozen){let cols=Math.max(0,Math.round((o.dt||0)*90));cols=Math.min(cols,40);for(let n=0;n<cols;n++){mctx.drawImage(mm,-2,0);const live=moving||(sliding&&breathRate>0&&Math.random()<.35);for(let yy=0;yy<420;yy+=2){let v;if(yy<pl-24)v=40+((yy*13)%7)*14+(yy%20<3?70:0);else if(Math.abs(yy-pl)<4)v=245;else if(live&&sliding)v=Math.random()*150+20;else v=(yy%(pl-30)<5?140:30)+((yy*7)%5)*6;mctx.fillStyle=`rgb(${v|0},${v|0},${v|0})`;mctx.fillRect(218,yy,2,2);}}}
  c.save();c.globalAlpha=Math.min(1,bright);c.drawImage(mm,500,0);c.restore();c.fillStyle='#000';c.fillRect(498,0,4,420);
- c.fillStyle='#c7d4da';c.font='13px sans-serif';c.fillText('M-MODE',512,40);c.fillText('PLEURAL LINE',122,pl-12);c.fillText('A-LINE',300,pl*2-38);c.fillText('RIB',52,pl-56);
+ c.fillStyle='#c7d4da';c.font=uiCanvasFont('13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('M-MODE',512,40);c.fillText('PLEURAL LINE',122,pl-12);c.fillText('A-LINE',300,pl*2-38);c.fillText('RIB',52,pl-56);
 }

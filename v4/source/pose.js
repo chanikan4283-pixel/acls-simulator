@@ -11,3 +11,9 @@ export function facialTargets(state,role,time,historyAt=null,reduced=false){
  const speaking=role==='family'&&state.history&&!reduced?Math.max(0,Math.sin(elapsed*5))*Math.max(0,envelope)*.065:0;
  return {concern,speaking};
 }
+
+export function uiCanvasFont(spec){
+ const mode=typeof document==='undefined'?'classic':document.body?.dataset.font||'system';
+ const family=mode==='humanist'?'"Trebuchet MS", "Avenir Next", sans-serif':mode==='system'?'-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", sans-serif':'Bahnschrift, "Avenir Next", "Segoe UI", sans-serif';
+ return spec.replace(/(px).*/, '$1 '+family);
+}

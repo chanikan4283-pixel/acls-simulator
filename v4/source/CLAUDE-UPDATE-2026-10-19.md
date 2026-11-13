@@ -364,3 +364,12 @@ Taken over from Codex (weekly limit reached). Backup of the files before this pa
 - 3D role labels: translucent rounded pills with a hairline edge and sentence-case white text ("Compressions", "Meds / Defib"); they now pack to the left of the right-hand HUD so they are never hidden behind it.
 - System font stack (-apple-system / SF Pro, Inter fallback); pill chips; 14–26 px radii; filled primary actions (teal give/pacer, yellow charge, red shock); press-scale feedback; quieter section labels.
 - Tests unchanged: 106 pass.
+
+## Pass 13 (2026-11-13) — CPR posture, smoother procedures, individual debrief, calmer type
+Built on top of Codex's 2 Nov animation update (synced from the device first).
+- **CPR rig (scene.js)**: rescuer stands on a visible two-step stool (0.345 m) with feet under the hips and thighs at the mattress edge; hip hinge so the shoulders sit over the lower half of the sternum; elbows locked; stacked hands at the nipple line (z −0.12). Stroke is driven from the hips: fast downstroke, brief full-depth contact, complete recoil (≈50 % duty) at the selected rate (default 100/min, 100–120 valid) and depth (5–6 cm). Patient chest deforms locally; small impact follow-through on the patient's head/arms, mattress give and rescuer head. Tired rescuer: bent elbows and slump. Floor raised so the bed is at a realistic height; bed rails lowered.
+- **Compression sound (app.js)**: one deep thump exactly as the hands reach full depth (phase-locked to the visible stroke) instead of a free-running beep. `teamMotion()` now also returns `strokePhase`.
+- **Pads / shock**: gel on both sites, pads rolled on one after the other; on shock a brief muscle jolt and light from the pads, team hands-off pose while clear.
+- **Individual debrief (feedback.js, new)**: `personalFeedback(report, goals)` builds a per-learner block at the top of the debrief — headline, six domain bars (CPR quality, rhythm & shock, drugs & access, finding the cause, safety & comfort, after ROSC), "what you did well" from the learner's own numbers, up to four priorities quoting their own errors with counts and timestamps, and one drill for the next attempt. Tests: tests/feedback.test.mjs.
+- **Typography / iPad**: Apple system font (`data-font="system"`, SF Pro on iPad), off-white text with softer secondary colour and hairline borders; rhythm-check banner and epinephrine line no longer wrap; dock icons never collide with labels; status chips in one tidy row.
+- Tests: 112 pass. Scripted runs of cases 1–5 reach completion (case 5 after the re-narcotisation window).

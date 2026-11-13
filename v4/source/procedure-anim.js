@@ -1,3 +1,4 @@
+import {uiCanvasFont} from './pose.js';
 // Close-up "procedure camera" animations drawn on canvas (original artwork, educational only).
 // kinds: 'valsalva' (modified Valsalva / REVERT), 'carotid' (carotid sinus massage), 'adenosine' (double-syringe rapid push).
 import {waveform} from './ecg.js';
@@ -66,12 +67,12 @@ function drawStrip(c,t,kind,hr,converts,rhythm='SVT'){
   if(kind==='adenosine'&&tt>6.4&&tt<10.2){rh='ASYSTOLE';}
   if(converts&&tt>(kind==='adenosine'?10.2:PROCEDURES[kind].duration-3)){rh='NSR';rate=88;}
   const v=rh==='ASYSTOLE'?(.1*Math.exp(-Math.pow(((tt*1.2)%1)-.5,2)/.002)):waveform(tt,rh,rate);const yy=y0+h*.7-v*h*.42;i?c.lineTo(x0+i,yy):c.moveTo(x0+i,yy);}
- c.stroke();c.fillStyle='#8af0b5';c.font='bold 12px sans-serif';c.fillText('II',x0+4,y0+12);
+ c.stroke();c.fillStyle='#8af0b5';c.font=uiCanvasFont('bold 12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('II',x0+4,y0+12);
  const label=kind==='adenosine'&&t>6.4&&t<10.6?'PAUSE — transient AV block':converts&&t>PROCEDURES[kind].duration-2.5?'Sinus rhythm':`${rhythm==='SVT'?'SVT':rhythm==='CHB'?'CHB':rhythm} ${hr}/min`;c.textAlign='right';c.fillText(label,x0+w-4,y0+12);c.textAlign='left';
 }
 
 function paBg(c,top='#20343b',bottom='#0e1d22'){const g=c.createLinearGradient(0,0,0,350);g.addColorStop(0,top);g.addColorStop(1,bottom);c.fillStyle=g;c.fillRect(0,0,720,350);}
-function paCaption(c,text,x,y,color='#ffe2a8'){c.font='bold 15px sans-serif';c.fillStyle=color;c.fillText(text,x,y);}
+function paCaption(c,text,x,y,color='#ffe2a8'){c.font=uiCanvasFont('bold 15px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle=color;c.fillText(text,x,y);}
 function paSkin(c){const g=c.createLinearGradient(0,0,0,40);g.addColorStop(0,'#e3b694');g.addColorStop(1,'#c99271');return g;}
 
 const PA_DRAW={
@@ -101,11 +102,11 @@ const PA_DRAW={
    const plunger=blowing?Math.min(18,(t-1.2)*5):0;c.fillStyle='#4a5a60';c.fillRect(-5,40+plunger,10,6);c.fillRect(-1.5,46+plunger,3,26);c.fillRect(-7,72+plunger,14,4);c.fillStyle='#8fa5ad';c.fillRect(-2,-6,4,8);c.restore();}
   c.restore();c.restore();
   // Pressure gauge during the strain.
-  if(t>1.2&&t<8.2){const p=Math.min(40,(t-1.2)*25)+Math.sin(t*9)*2;const gx=610,gy=90;c.fillStyle='#0b1a1f';c.beginPath();c.arc(gx,gy,48,0,Math.PI*2);c.fill();c.strokeStyle='#5fe0b5';c.lineWidth=4;c.beginPath();c.arc(gx,gy,40,Math.PI*.75,Math.PI*.75+Math.PI*1.5*(p/60));c.stroke();c.fillStyle='#fff';c.font='bold 22px sans-serif';c.textAlign='center';c.fillText(Math.round(p),gx,gy+8);c.font='11px sans-serif';c.fillText('mmHg',gx,gy+24);c.textAlign='left';
+  if(t>1.2&&t<8.2){const p=Math.min(40,(t-1.2)*25)+Math.sin(t*9)*2;const gx=610,gy=90;c.fillStyle='#0b1a1f';c.beginPath();c.arc(gx,gy,48,0,Math.PI*2);c.fill();c.strokeStyle='#5fe0b5';c.lineWidth=4;c.beginPath();c.arc(gx,gy,40,Math.PI*.75,Math.PI*.75+Math.PI*1.5*(p/60));c.stroke();c.fillStyle='#fff';c.font=uiCanvasFont('bold 22px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(Math.round(p),gx,gy+8);c.font=uiCanvasFont('11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('mmHg',gx,gy+24);c.textAlign='left';
    paCaption(c,`Strain ${Math.max(0,Math.ceil(15-(t-1.2)*15/7))} s`,40,60);}
   if(t>8.2&&t<14.2)paCaption(c,`Flat + legs up ${Math.max(0,Math.ceil(15-(t-8.2)*15/6))} s`,40,60,'#bff3e2');
   if(t<1.2)paCaption(c,'Semi-recumbent 45°',40,60,'#cfe');
-  c.font='12px sans-serif';c.fillStyle='#9fb6bb';c.fillText('REVERT trial: modified Valsalva ≈ 3× more effective than the standard maneuver',40,330);
+  c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText('REVERT trial: modified Valsalva ≈ 3× more effective than the standard maneuver',40,330);
  },
  carotid(c,t){paBg(c,'#2a3a44','#121e24');
   // Right lateral view: face turned to the left (away from the examiner), neck extended.
@@ -131,7 +132,7 @@ const PA_DRAW={
    c.save();c.translate(fx+200*(1-k),fy);c.rotate(.25);c.fillStyle='#e6b896';c.strokeStyle='#b98466';c.lineWidth=1.5;for(const o of [-8,8]){c.beginPath();c.roundRect?c.roundRect(0,o-7,130,14,7):c.rect(0,o-7,130,14);c.fill();c.stroke();}c.fillStyle='#dcaa88';c.beginPath();c.ellipse(150,0,44,28,0,0,Math.PI*2);c.fill();c.restore();
    paCaption(c,`Massage ${Math.max(0,Math.ceil(10-(t-4.2)*10/6.8))} s · one side`,cx+40,cy+100);}
   c.restore();
-  c.font='12px sans-serif';c.fillStyle='#ffb4a8';c.fillText('Avoid if carotid bruit, prior stroke / TIA or older age · never massage both sides',40,330);
+  c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#ffb4a8';c.fillText('Avoid if carotid bruit, prior stroke / TIA or older age · never massage both sides',40,330);
  },
  patch(c,t){paBg(c,'#2b3b40','#121e22');
   // Back view of the patient lying on her side after a log-roll.
@@ -146,12 +147,12 @@ const PA_DRAW={
   const patches=[[-120,170,-.15,'FENTANYL 50 mcg/h','new'],[95,215,.12,'FENTANYL 50 mcg/h','old — not removed']];
   patches.forEach(([px,py,rot,txt,note],i)=>{const p=peel[i];if(p>=1)return;c.save();c.translate(px+p*220,py-p*170);c.rotate(rot+p*1.2);c.globalAlpha=Math.max(0,1-p*.9)*Math.min(1,roll*1.5);
    c.fillStyle='#f3ead8';c.strokeStyle='#bfae8e';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-52,-34,104,68,12):c.rect(-52,-34,104,68);c.fill();c.stroke();
-   c.fillStyle='#8a6d3b';c.font='bold 11px sans-serif';c.textAlign='center';c.fillText(txt,0,-4);c.font='10px sans-serif';c.fillText('transdermal system',0,12);c.textAlign='left';c.restore();
+   c.fillStyle='#8a6d3b';c.font=uiCanvasFont('bold 11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(txt,0,-4);c.font=uiCanvasFont('10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('transdermal system',0,12);c.textAlign='left';c.restore();
    if(found&&p===0){const pulse=.5+.5*Math.sin(t*6);c.strokeStyle=`rgba(255,90,90,${.5+.5*pulse})`;c.lineWidth=4;c.beginPath();c.ellipse(px,py,72+pulse*6,52+pulse*5,rot,0,Math.PI*2);c.stroke();paCaption(c,note,px-48,py+72,'#ffb4a8');}});
   // Gloved hand peeling.
   if(t>5.2&&t<8.2){const which=t<6.6?0:1,[px,py]=patches[which],p=peel[which];c.save();c.translate(px+40+p*220,py-30-p*170);c.rotate(-.5);c.fillStyle='#5aa9e6';c.beginPath();c.ellipse(0,0,38,24,0,0,Math.PI*2);c.fill();for(let k=0;k<3;k++){c.beginPath();c.roundRect?c.roundRect(-46,-20+k*13,30,11,5):c.rect(-46,-20+k*13,30,11);c.fill();}c.restore();}
-  if(found&&t<5.4){c.font='bold 22px sans-serif';c.fillStyle='#ff9a8c';c.fillText('2 PATCHES FOUND!',470,70);}
-  c.font='12px sans-serif';c.fillStyle='#9fb6bb';c.fillText('Also check skin folds, axillae, scalp and under dressings · keep ventilating throughout',40,330);
+  if(found&&t<5.4){c.font=uiCanvasFont('bold 22px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#ff9a8c';c.fillText('2 PATCHES FOUND!',470,70);}
+  c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText('Also check skin folds, axillae, scalp and under dressings · keep ventilating throughout',40,330);
  },
  push(c,t,{label}){paBg(c,'#24363c','#0f1c21');c.fillStyle='#24363c';c.fillRect(0,350,720,70);
   // Forearm with IV hub, extension set and a port; drug syringe then flush.
@@ -162,8 +163,8 @@ const PA_DRAW={
   const inX=first?0:seg(t,2.25,2.45)*0;c.save();c.translate(372+inX,-138);c.rotate(-.55);c.fillStyle='#f5fbfc';c.strokeStyle='#8fa5ad';c.lineWidth=1.5;c.beginPath();c.rect(10,-r/2,len,r);c.fill();c.stroke();const fill=(1-push)*(len-14);c.fillStyle=fluid;c.fillRect(12,-r/2+2,fill,r-4);c.fillStyle='#8fa5ad';c.fillRect(0,-3,12,6);const px=12+fill;c.fillStyle='#43525a';c.fillRect(px,-r/2+1,6,r-2);c.fillRect(px+6,-2,len+10-fill,4);c.fillRect(px+len+14-fill,-r/2-4,6,r+8);
   // thumb on the plunger
   c.fillStyle='#d9a888';c.beginPath();c.ellipse(px+len+26-fill,0,16,12,0,0,Math.PI*2);c.fill();c.restore();
-  c.save();c.translate(440,-215);c.fillStyle='#ffffff';c.font='bold 16px sans-serif';c.fillText(name,0,0);c.restore();c.restore();
-  if(t<1.0){c.font='bold 22px sans-serif';c.fillStyle='#bff3e2';c.fillText('“'+(label||'Drug')+' — confirm?”',40,60);c.font='15px sans-serif';c.fillText('“Confirmed.”',40,88);}
+  c.save();c.translate(440,-215);c.fillStyle='#ffffff';c.font=uiCanvasFont('bold 16px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(name,0,0);c.restore();c.restore();
+  if(t<1.0){c.font=uiCanvasFont('bold 22px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#bff3e2';c.fillText('“'+(label||'Drug')+' — confirm?”',40,60);c.font=uiCanvasFont('15px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText('“Confirmed.”',40,88);}
   if(t>1&&t<2.3)paCaption(c,'PUSH',560,60,'#ff9a8c');if(t>2.4&&t<3.5)paCaption(c,'FLUSH',560,60,'#8fd0ff');if(t>3.6)paCaption(c,'Limb up ↑',540,60,'#bff3e2');
  },
  auscultate(c,t,{label='tube'}){{const g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,'#22363d');g.addColorStop(1,'#0f1c21');c.fillStyle=g;c.fillRect(0,0,720,420);}
@@ -180,7 +181,7 @@ const PA_DRAW={
   c.strokeStyle='#c08d6e';c.lineWidth=2;c.beginPath();c.moveTo(cx,cy-110);c.lineTo(cx,cy+40);c.stroke();// sternum
   c.fillStyle='#965c53';c.beginPath();c.ellipse(cx,cy-150,12,4,0,0,Math.PI*2);c.fill();// mouth
   // Airway device.
-  const sq=br;if(label==='tube'){c.strokeStyle='#e8f1ee';c.lineWidth=7;c.beginPath();c.moveTo(cx,cy-150);c.quadraticCurveTo(cx-6,cy-205,cx-70,cy-232);c.stroke();c.fillStyle='#222';c.fillRect(cx-6,cy-163,12,4);c.fillStyle='#f4f1e6';c.fillRect(cx-46,cy-153,92,5);c.font='11px sans-serif';c.fillStyle='#bfe3d8';c.fillText('22 cm at the teeth',cx+52,cy-146);}
+  const sq=br;if(label==='tube'){c.strokeStyle='#e8f1ee';c.lineWidth=7;c.beginPath();c.moveTo(cx,cy-150);c.quadraticCurveTo(cx-6,cy-205,cx-70,cy-232);c.stroke();c.fillStyle='#222';c.fillRect(cx-6,cy-163,12,4);c.fillStyle='#f4f1e6';c.fillRect(cx-46,cy-153,92,5);c.font=uiCanvasFont('11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#bfe3d8';c.fillText('22 cm at the teeth',cx+52,cy-146);}
   if(label==='bvm'){c.fillStyle='#c7e3dacc';c.beginPath();c.ellipse(cx,cy-160,30,22,0,0,Math.PI*2);c.fill();c.strokeStyle='#e8f1ee';c.lineWidth=7;c.beginPath();c.moveTo(cx,cy-176);c.lineTo(cx-70,cy-232);c.stroke();}
   if(vent){c.fillStyle='#89c9af';c.beginPath();c.ellipse(cx-120,cy-238,58*(1-.35*sq),30*(1-.2*sq),-.3,0,Math.PI*2);c.fill();c.fillStyle='#e0b291';c.beginPath();c.ellipse(cx-120,cy-238,22,14+10*sq,-.3,0,Math.PI*2);c.fill();if(sq>.2)paCaption(c,'squeeze',cx-190,cy-262,'#bff3e2');}
   // Stethoscope: epigastrium → left → right (patient's left is on the viewer's right).
@@ -190,14 +191,14 @@ const PA_DRAW={
   c.strokeStyle='#2c3b44';c.lineWidth=5;c.beginPath();c.moveTo(sx,sy);c.bezierCurveTo(sx+40,sy-90,620,40,700,20);c.stroke();
   c.fillStyle='#c9d3d8';c.beginPath();c.arc(sx,sy,19,0,Math.PI*2);c.fill();c.fillStyle='#8a979e';c.beginPath();c.arc(sx,sy,12,0,Math.PI*2);c.fill();c.strokeStyle='#eef3f5';c.lineWidth=2;c.beginPath();c.arc(sx,sy,19,0,Math.PI*2);c.stroke();
   const listening=m>.95&&i<3&&br>.15;
-  if(listening){if(i===0){c.strokeStyle='#ffb4a8';c.lineWidth=3;c.beginPath();c.arc(sx+44,sy-14,14,0,Math.PI*2);c.moveTo(sx+34,sy-24);c.lineTo(sx+54,sy-4);c.stroke();c.font='bold 13px sans-serif';c.fillStyle='#ffd3cb';c.fillText(label==='tube'||label==='bvm'?'silent — no gurgle':'—',sx+64,sy-9);}
-   else if(breathing){c.strokeStyle=`rgba(160,240,210,${.4+.6*br})`;c.lineWidth=3;for(let k=1;k<=3;k++){c.beginPath();c.arc(sx,sy,22+k*12*br,i===1?-.9:Math.PI-.9,i===1?.9:Math.PI+.9);c.stroke();}c.font='bold 13px sans-serif';c.fillStyle='#bff3e2';c.textAlign=i===1?'left':'right';c.fillText('whoosh ✓',sx+(i===1?62:-62),sy+5);c.textAlign='left';}}
-  if(!breathing&&i>0&&m>.95&&i<3){c.font='bold 13px sans-serif';c.fillStyle='#ffd3cb';c.fillText('no breath sounds',sx-50,sy+40);}
+  if(listening){if(i===0){c.strokeStyle='#ffb4a8';c.lineWidth=3;c.beginPath();c.arc(sx+44,sy-14,14,0,Math.PI*2);c.moveTo(sx+34,sy-24);c.lineTo(sx+54,sy-4);c.stroke();c.font=uiCanvasFont('bold 13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#ffd3cb';c.fillText(label==='tube'||label==='bvm'?'silent — no gurgle':'—',sx+64,sy-9);}
+   else if(breathing){c.strokeStyle=`rgba(160,240,210,${.4+.6*br})`;c.lineWidth=3;for(let k=1;k<=3;k++){c.beginPath();c.arc(sx,sy,22+k*12*br,i===1?-.9:Math.PI-.9,i===1?.9:Math.PI+.9);c.stroke();}c.font=uiCanvasFont('bold 13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#bff3e2';c.textAlign=i===1?'left':'right';c.fillText('whoosh ✓',sx+(i===1?62:-62),sy+5);c.textAlign='left';}}
+  if(!breathing&&i>0&&m>.95&&i<3){c.font=uiCanvasFont('bold 13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#ffd3cb';c.fillText('no breath sounds',sx-50,sy+40);}
   // Checklist panel.
   const items=label==='tube'?[['Epigastrium silent',3.4],['Left breath sounds',6.6],['Right breath sounds',9.8],['Equal chest rise',10.4],['ETCO₂ waveform → attach',99]]:[['Epigastrium',3.4],['Left lung',6.6],['Right lung',9.8]];
-  c.fillStyle='#0b171bcc';c.fillRect(530,92,178,24+items.length*26);c.font='bold 12px sans-serif';c.fillStyle='#9fb6bb';c.fillText('PLACEMENT CHECK',542,110);
-  items.forEach(([txt,at],k)=>{const ok=t>=at;c.font='13px sans-serif';c.fillStyle=ok?'#8af0b5':'#d5e2e4';c.fillText((ok?'✓ ':'○ ')+txt,542,136+k*26);});
-  c.font='11px sans-serif';c.fillStyle='#9fb6bb';c.fillText(vent?'Demo timing · real rate: 1 breath every 6 s (10/min)':'Listen through a full breath at each site',430,26);
+  c.fillStyle='#0b171bcc';c.fillRect(530,92,178,24+items.length*26);c.font=uiCanvasFont('bold 12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText('PLACEMENT CHECK',542,110);
+  items.forEach(([txt,at],k)=>{const ok=t>=at;c.font=uiCanvasFont('13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle=ok?'#8af0b5':'#d5e2e4';c.fillText((ok?'✓ ':'○ ')+txt,542,136+k*26);});
+  c.font=uiCanvasFont('11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText(vent?'Demo timing · real rate: 1 breath every 6 s (10/min)':'Listen through a full breath at each site',430,26);
  },
  adenosine(c,t){paBg(c,'#25373e','#101d22');
   // Forearm with antecubital cannula; arm raises at the end.
@@ -215,7 +216,7 @@ const PA_DRAW={
   paSyringe(c,sx+20,sy-10,-Math.PI*.18,150,20,pushB,'#dff1ff','NS 20 mL');
   c.restore();
   if(t>1.8&&t<2.7)paCaption(c,'PUSH!',420,70,'#ff9a8c');if(t>3.6&&t<4.9)paCaption(c,'FLUSH!',420,70,'#8fd0ff');if(t>5)paCaption(c,'Arm up ↑',420,70,'#bff3e2');
-  c.font='12px sans-serif';c.fillStyle='#9fb6bb';c.fillText('First dose 6 mg, second dose 12 mg · rapid push, then 20 mL flush at once',40,330);
+  c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText('First dose 6 mg, second dose 12 mg · rapid push, then 20 mL flush at once',40,330);
  }
 };
 function paSyringe(c,x,y,angle,len,r,push,fluid,label){c.save();c.translate(x,y);c.rotate(angle);
@@ -223,7 +224,7 @@ function paSyringe(c,x,y,angle,len,r,push,fluid,label){c.save();c.translate(x,y)
  const fill=(1-push)*(len-14);c.fillStyle=fluid;c.fillRect(12,-r/2+2,fill,r-4);
  c.fillStyle='#8fa5ad';c.fillRect(0,-3,12,6);// tip
  const px=12+fill;c.fillStyle='#43525a';c.fillRect(px,-r/2+1,6,r-2);c.fillRect(px+6,-2,len+10-fill,4);c.fillRect(px+len+14-fill,-r/2-4,6,r+8);// plunger
- c.save();c.translate(len*.45,0);if(Math.cos(angle)<0)c.rotate(Math.PI);c.fillStyle='#e7f1f4';c.font='bold 11px sans-serif';c.textAlign='center';c.fillText(label,0,-r/2-6);c.restore();c.restore();}
+ c.save();c.translate(len*.45,0);if(Math.cos(angle)<0)c.rotate(Math.PI);c.fillStyle='#e7f1f4';c.font=uiCanvasFont('bold 11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(label,0,-r/2-6);c.restore();c.restore();}
 
 // Interactive back inspection: the player must find and peel off every patch.
 export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{}}={}){
@@ -241,9 +242,9 @@ export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{}}={}){
   c.save();c.translate(360,215);c.scale(1,.55+.45*roll);const g=c.createLinearGradient(-220,-160,220,160);g.addColorStop(0,'#e4b998');g.addColorStop(1,'#c99272');c.fillStyle=g;c.beginPath();c.moveTo(-240,-150);c.bezierCurveTo(-130,-190,130,-190,240,-150);c.bezierCurveTo(270,-30,250,110,190,175);c.lineTo(-190,175);c.bezierCurveTo(-250,110,-270,-30,-240,-150);c.fill();
   c.strokeStyle='rgba(150,95,72,.55)';c.lineWidth=4;c.beginPath();c.moveTo(0,-170);c.quadraticCurveTo(6,10,0,175);c.stroke();c.lineWidth=3;for(const sx of [-1,1]){c.beginPath();c.moveTo(sx*45,-125);c.quadraticCurveTo(sx*130,-135,sx*145,-40);c.quadraticCurveTo(sx*100,-15,sx*50,-45);c.stroke();}
   c.fillStyle='#6d8fa0';c.fillRect(-260,165,520,40);c.restore();
-  if(roll>=1)for(const p of patches){const k=p.peel?seg(t,p.peel,p.peel+.7):0;if(k>=1)continue;c.save();c.translate(p.x+k*160,p.y-k*140);c.rotate(p.r+k*1.4);c.globalAlpha=1-k*.9;c.fillStyle='#f3ead8';c.strokeStyle='#bfae8e';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-46,-30,92,60,10):c.rect(-46,-30,92,60);c.fill();c.stroke();c.fillStyle='#8a6d3b';c.font='bold 10px sans-serif';c.textAlign='center';c.fillText(p.label,0,-4);c.font='9px sans-serif';c.fillText(p.date,0,12);c.restore();}
+  if(roll>=1)for(const p of patches){const k=p.peel?seg(t,p.peel,p.peel+.7):0;if(k>=1)continue;c.save();c.translate(p.x+k*160,p.y-k*140);c.rotate(p.r+k*1.4);c.globalAlpha=1-k*.9;c.fillStyle='#f3ead8';c.strokeStyle='#bfae8e';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-46,-30,92,60,10):c.rect(-46,-30,92,60);c.fill();c.stroke();c.fillStyle='#8a6d3b';c.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(p.label,0,-4);c.font=uiCanvasFont('9px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(p.date,0,12);c.restore();}
   if(roll>=1&&t<1.4)msg.textContent='Tap any patch you find to peel it off.';
-  c.font='12px sans-serif';c.fillStyle='#9fb6bb';c.fillText(`Removed: ${removed}`,20,404);
+  c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText(`Removed: ${removed}`,20,404);
   raf=requestAnimationFrame(frame);};
  raf=requestAnimationFrame(frame);return {el,close};
 }

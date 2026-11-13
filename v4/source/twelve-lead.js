@@ -1,3 +1,4 @@
+import {uiCanvasFont} from './pose.js';
 // Synthetic 12-lead ECG on standard paper (25 mm/s, 10 mm/mV). Educational drawing, not a recording.
 const TL_LEADS=[['I','aVR','V1','V4'],['II','aVL','V2','V5'],['III','aVF','V3','V6']];
 // TL_QRS shape per lead: [q, r, s] in mV for a normal axis.
@@ -42,11 +43,11 @@ export function drawTwelveLead(canvas,profile){
  for(let x=0;x<W;x+=mm){const major=Math.round(x/mm)%5===0;c.strokeStyle=major?'#f0a8a0':'#fbd9d3';c.lineWidth=major?1:.5;c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
  for(let y=0;y<H;y+=mm){const major=Math.round(y/mm)%5===0;c.strokeStyle=major?'#f0a8a0':'#fbd9d3';c.lineWidth=major?1:.5;c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
  const secW=25*mm,mv=10*mm,rowH=(H-40)/4,colW=(W-20)/4;
- c.strokeStyle='#1d1d1d';c.lineWidth=1.4;c.font=`bold ${Math.round(mm*3.2)}px sans-serif`;c.fillStyle='#1d1d1d';
+ c.strokeStyle='#1d1d1d';c.lineWidth=1.4;c.font=uiCanvasFont(`bold ${Math.round(mm*3.2)}px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif`);c.fillStyle='#1d1d1d';
  const trace=(lead,x0,y0,t0,secs)=>{c.beginPath();for(let i=0;i<=secs*secW;i++){const tt=t0+i/secW,y=y0-tlLeadValue(lead,tt,profile)*mv;i?c.lineTo(x0+i,y):c.moveTo(x0+i,y);}c.stroke();};
  TL_LEADS.forEach((row,ri)=>row.forEach((lead,ci)=>{const x0=10+ci*colW,y0=20+ri*rowH+rowH*.6;
   c.beginPath();if(ci===0){c.moveTo(x0,y0);c.lineTo(x0+mm,y0);c.lineTo(x0+mm,y0-mv);c.lineTo(x0+3*mm,y0-mv);c.lineTo(x0+3*mm,y0);c.stroke();}
   trace(lead,x0+(ci===0?4*mm:0),y0,ci*2.5,2.5-(ci===0?4*mm/secW:0));c.fillText(lead,x0+(ci===0?5*mm:4),20+ri*rowH+14);}));
  const y0=20+3*rowH+rowH*.6;trace('II',10,y0,0,(W-20)/secW);c.fillText('II (rhythm)',14,20+3*rowH+14);
- c.font=`${Math.round(mm*2.6)}px sans-serif`;c.fillStyle='#7a5a57';c.fillText('25 mm/s · 10 mm/mV · synthetic teaching ECG',W-mm*70,H-8);
+ c.font=uiCanvasFont(`${Math.round(mm*2.6)}px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif`);c.fillStyle='#7a5a57';c.fillText('25 mm/s · 10 mm/mV · synthetic teaching ECG',W-mm*70,H-8);
 }

@@ -18,6 +18,7 @@ export function teamMotion(s){
  }
  const assistedRise=breathPhase>=0&&breathPhase<1?Math.sin(Math.PI*breathPhase):0;
  const spontaneous=s.pulse&&!s.bvm&&s.rr>0?Math.max(0,Math.sin((s.t||0)*s.rr/60*Math.PI*2)):0;
- return {compressing,ventPause,compression:compressing?(1-Math.cos(clock*rate/60*Math.PI*2))/2:0,breath:assistedRise||spontaneous,
+ const strokePhase=compressing?(((coordinated?phase:clock)*rate/60)%1+1)%1:0;
+ return {compressing,ventPause,strokePhase,compression:compressing?(1-Math.cos((coordinated?phase:clock)*rate/60*Math.PI*2))/2:0,breath:assistedRise||spontaneous,
   label:ventPause?'VENTILATION · 2 BREATHS':compressing?(coordinated?'CPR · 30:2':'CPR · CONTINUOUS'):s.bvm?'ASSISTED VENTILATION':'TEAM READY'};
 }

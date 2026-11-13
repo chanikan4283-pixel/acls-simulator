@@ -1,9 +1,12 @@
+import {uiCanvasFont} from './pose.js';
 import {waveform,displayRhythm} from './ecg.js';
 import {layoutLabels} from './label-layout.js';
 import {smoothValue,NECK,procedureBlend,BVM_ANCHORS,facialTargets} from './pose.js';
 import {teamMotion} from './team-motion.js';
 /* Original procedural cartoon characters. Archived scan assets are no longer rendered. */
 const T=globalThis.THREE;
+// Floor is raised so the bed sits at a realistic resuscitation height (mattress ≈0.63 m) for 1.7 m staff.
+const SC_FLOOR=.55,SC_STOOL=.345,SC_CPR_SCALE=1.1,SC_CPR_FEET_X=-.53;// stool height puts the rescuer's knees at mattress level with feet under the hips
 export class Ward {
  constructor(canvas,onPick=()=>{}){
   this.procedureStarts={};this.poseCache=new WeakMap();this.canvas=canvas;this.onPick=onPick;this.time=0;this.state={pulse:true,conscious:true,rr:14};this.quality='standard';this.reduced=false;
@@ -15,14 +18,22 @@ export class Ward {
   this.scene.add(new T.HemisphereLight('#f1f7ff','#61736d',.6));
   const key=new T.DirectionalLight('#fff3df',1.3);key.position.set(-3,7,3);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:1,far:20});key.shadow.bias=-.0005;this.scene.add(key);
   const fill=new T.DirectionalLight('#b1ddff',.65);fill.position.set(4,3,-3);this.scene.add(fill);
-  this.room();this.bed();this.patient=this.human('#bc8b70',true);this.patient.root.position.set(0,1.32,0);this.patient.root.rotation.x=-Math.PI/2;this.scene.add(this.patient.root);
+  this.floorGroup=new T.Group();this.floorGroup.position.y=SC_FLOOR;this.scene.add(this.floorGroup);{const sc=this.scene;this.scene=this.floorGroup;this.room();this.scene=sc;}this.bed();this.patient=this.human('#bc8b70',true);this.patient.root.position.set(0,1.32,0);this.patient.root.rotation.x=-Math.PI/2;this.scene.add(this.patient.root);
   this.patient.root.userData.pick='patient';this.patient.root.traverse(o=>{if(o.isMesh)o.userData.pick='patient';});
-  this.compressor=this.human('#a97860',false,'#2d666c');this.compressor.root.position.set(-.85,0,-.15);this.compressor.root.rotation.y=Math.PI/2;this.scene.add(this.compressor.root);
-  this.airway=this.human('#d3ac86',false,'#577b9b');this.airway.root.position.set(.15,0,-1.65);this.airway.root.rotation.y=0;this.scene.add(this.airway.root);
-  this.bagger=this.human('#bda18f',false,'#516d87');this.bagger.root.position.set(.82,0,-1.6);this.bagger.root.rotation.y=-.5;this.scene.add(this.bagger.root);
-  this.nurse=this.human('#c9967d',false,'#3f777e');this.nurse.root.position.set(1.5,0,-.8);this.nurse.root.rotation.y=-.5;this.scene.add(this.nurse.root);
-  this.family=this.human('#b58369',false,'#bdab9c',false);this.family.root.position.set(-2.5,0,-2.8);this.family.root.rotation.y=.4;this.scene.add(this.family.root);
-  this.equipment();this.step=this.box(.56,.39,.55,this.mat('#607d82'),-.88,.195,-.15);this.box(.58,.03,.57,this.mat('#304e54'),0,.21,0,this.step);this.step.visible=false;this.cameraPreset('overview');
+  this.compressor=this.human('#a97860',false,'#2d666c');this.compressor.root.scale.setScalar(SC_CPR_SCALE);this.compressor.root.position.set(SC_CPR_FEET_X,SC_FLOOR+SC_STOOL,.10);this.compressor.root.rotation.y=Math.PI/2;this.scene.add(this.compressor.root);
+  // Rotate around the anatomical hip, keeping the waist attached to the legs.
+  this.compressor.hip=new T.Group();this.compressor.hip.position.y=.69;this.compressor.root.add(this.compressor.hip);this.compressor.hip.add(this.compressor.torso);this.compressor.torso.position.y=.30;
+  this.airway=this.human('#d3ac86',false,'#577b9b');this.airway.root.position.set(.12,SC_FLOOR,-1.62);this.airway.root.rotation.y=0;this.scene.add(this.airway.root);
+  this.bagger=this.human('#bda18f',false,'#516d87');this.bagger.root.position.set(.78,SC_FLOOR,-1.55);this.bagger.root.rotation.y=-.5;this.scene.add(this.bagger.root);
+  this.nurse=this.human('#c9967d',false,'#3f777e');this.nurse.root.position.set(1.25,SC_FLOOR,-.75);this.nurse.root.rotation.y=-.5;this.scene.add(this.nurse.root);
+  this.family=this.human('#b58369',false,'#bdab9c',false);this.family.root.position.set(-2.5,SC_FLOOR,-2.8);this.family.root.rotation.y=.4;this.scene.add(this.family.root);
+  this.equipment();// Two-step CPR stool beside the bed: non-slip top, lower step on the outside, splayed legs.
+  {const g=new T.Group();g.position.set(SC_CPR_FEET_X-.19,SC_FLOOR,.10);this.scene.add(g);this.step=g;const frame=this.mat('#b9c4c6',.35,.6),tread=this.mat('#2f474d',.95),edge=this.mat('#e7b84a',.6);
+   this.box(.5,.04,.62,tread,0,SC_STOOL-.02,0,g);this.box(.52,.012,.64,edge,0,SC_STOOL-.045,0,g);
+   this.box(.26,.035,.58,tread,-.37,SC_STOOL*.5,0,g);this.box(.27,.012,.6,edge,-.37,SC_STOOL*.5-.022,0,g);
+   for(const z of [-.27,.27]){this.rod([.22,0,z],[.22,SC_STOOL-.04,z],.016,frame,g);this.rod([-.22,0,z],[-.22,SC_STOOL-.04,z],.016,frame,g);this.rod([-.5,0,z],[-.48,SC_STOOL*.5-.02,z],.016,frame,g);this.rod([-.48,SC_STOOL*.5-.02,z],[-.22,SC_STOOL*.5-.02,z],.012,frame,g);this.rod([.22,.1,z],[-.5,.1,z],.01,frame,g);}
+   g.traverse(o=>{if(o.isMesh)o.userData.pick='compressor';});}
+  this.step.visible=true;this.cameraPreset('overview');
   const glove=this.mat('#a7c9d0',.8),sleeve=this.mat('#2d666c');this.cprArms=[];
   for(let i=0;i<2;i++){const upper=this.mesh(new T.CylinderGeometry(.058,.052,1,16),sleeve),lower=this.mesh(new T.CylinderGeometry(.05,.037,1,16),this.mat('#a97860')),hand=this.ell(.035,.019,.065,glove);this.cprArms.push({upper,lower,hand});upper.visible=lower.visible=hand.visible=false;}
   this.airwayArms=[];
@@ -45,7 +56,7 @@ export class Ward {
  box(w,h,d,mat,x=0,y=0,z=0,parent=this.scene){const o=this.mesh(new T.BoxGeometry(w,h,d),mat,parent);o.position.set(x,y,z);return o;}
  ell(rx,ry,rz,mat,x=0,y=0,z=0,parent=this.scene){const o=this.mesh(new T.SphereGeometry(1,24,18),mat,parent);o.scale.set(rx,ry,rz);o.position.set(x,y,z);return o;}
  rod(a,b,r,mat,parent=this.scene){const av=new T.Vector3(...a),bv=new T.Vector3(...b),d=bv.clone().sub(av);const o=this.mesh(new T.CylinderGeometry(r,r,d.length(),12),mat,parent);o.position.copy(av.add(bv).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());return o;}
- label(text,w=1.2,h=.25,bg='#25444c',fg='#e9f6ed'){const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,512,128);x.fillStyle=fg;x.font='bold 48px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,256,65);const m=new T.MeshBasicMaterial({map:new T.CanvasTexture(c)});return this.mesh(new T.PlaneGeometry(w,h),m);}
+ label(text,w=1.2,h=.25,bg='#25444c',fg='#e9f6ed'){const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,512,128);x.fillStyle=fg;x.font=uiCanvasFont('bold 48px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='center';x.textBaseline='middle';x.fillText(text,256,65);const m=new T.MeshBasicMaterial({map:new T.CanvasTexture(c)});return this.mesh(new T.PlaneGeometry(w,h),m);}
  room(){const wall=this.mat('#d4dfdf'),floor=this.mat('#7f979b',.9),trim=this.mat('#627c81'),white=this.mat('#f3eee3'),metal=this.mat('#a6b5b7',.3,.65);
   this.box(12,.1,12,floor,0,-.07,0);this.box(12,4,.15,wall,0,1.9,-4.5);this.box(.15,4,12,wall,-5,1.9,0);
   this.box(12,.12,.15,trim,0,.9,-4.4);this.box(.14,.12,12,trim,-4.9,.9,0);
@@ -58,10 +69,11 @@ export class Ward {
   this.rod([-3.9,3,-3.2],[-1.7,3,-3.2],.025,metal);
   const cab=this.mat('#a0b5b6');this.box(1.4,.9,.55,cab,3, .45,-3.5);this.box(1.5,.07,.65,white,3,.94,-3.5);for(let i=0;i<3;i++)this.box(1.2,.015,.02,metal,3,.25+i*.24,-3.21);
  }
- bed(){const metal=this.mat('#a6b2b3',.3,.65),dark=this.mat('#43565d'),sheet=this.mat('#e5ede6');this.box(1.25,.2,2.45,sheet,0,1.08,0);this.box(1.35,.12,2.6,dark,0,.93,0);
-  this.box(.9,.15,1.8,metal,0,.45,0);for(const x of [-.46,.46])for(const z of [-.85,.85]){this.rod([x,.15,z],[x,.93,z],.035,metal);const wheel=this.mesh(new T.CylinderGeometry(.1,.1,.07,18),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.12,z);}
-  for(const x of [-.67,.67]){this.rod([x,1.1,-.65],[x,1.1,.6],.025,metal);this.rod([x,.93,-.65],[x,1.1,-.65],.025,metal);this.rod([x,.93,.6],[x,1.1,.6],.025,metal);}
-  this.box(1.28,.35,.08,this.mat('#d0dedc'),0,1.05,1.35);
+ bed(){const metal=this.mat('#a6b2b3',.3,.65),dark=this.mat('#43565d'),sheet=this.mat('#e5ede6');this.box(.78,.2,2.45,sheet,0,1.08,0);this.box(.86,.12,2.6,dark,0,.93,0);
+  this.box(.6,.1,1.8,metal,0,SC_FLOOR+.2,0);for(const x of [-.32,.32])for(const z of [-.95,.95]){this.rod([x,SC_FLOOR+.12,z],[x,.93,z],.035,metal);const wheel=this.mesh(new T.CylinderGeometry(.075,.075,.06,18),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,SC_FLOOR+.075,z);}
+  // Side rails are lowered for resuscitation (folded beside the frame).
+  for(const x of [-.445,.445]){this.rod([x,.9,-.65],[x,.9,.6],.02,metal);this.rod([x,.78,-.65],[x,.78,.6],.016,metal);this.rod([x,.78,-.65],[x,.9,-.65],.016,metal);this.rod([x,.78,.6],[x,.9,.6],.016,metal);}
+  this.box(.82,.3,.06,this.mat('#d0dedc'),0,1.05,1.33);
  }
  clothPanel(width,length,color,parent,y,z){
   const geometry=new T.PlaneGeometry(width,length,24,32),p=geometry.attributes.position;
@@ -90,7 +102,7 @@ export class Ward {
   }
   this.ell(.019,.028,.021,skin,0,-.019,.142,head);
   const mouth=this.ell(.029,.005,.007,lip,0,-.071,.131,head);
-  const arms=[];
+  const legs=[],arms=[];
   for(const side of [-1,1]){
    const shoulder=new T.Group();shoulder.position.set(side*.232,.235,0);torso.add(shoulder);
    this.ell(.067,.075,.065,patient?skin:cloth,0,0,0,shoulder);
@@ -107,26 +119,32 @@ export class Ward {
    this.gown=this.clothPanel(.46,.53,'#98cbd1',torso,.01,.124);
    this.gownSides=new T.Group();torso.add(this.gownSides);for(const side of [-1,1]){const panel=this.clothPanel(.10,.51,'#98cbd1',this.gownSides,.01,.10);panel.position.x=side*.22;panel.rotation.y=side*.5;}
   }else{
-   for(const side of [-1,1]){this.rod([side*.105,.69,0],[side*.105,.39,0],.087,pants,root);this.ell(.087,.086,.086,pants,side*.105,.39,0,root);this.rod([side*.105,.39,0],[side*.105,.10,0],.067,pants,root);this.ell(.085,.062,.145,this.mat('#f2eee4'),side*.105,.065,.05,root);}
+   for(const side of [-1,1]){const thigh=this.rod([side*.105,.69,0],[side*.105,.39,0],.087,pants,root),knee=this.ell(.087,.086,.086,pants,side*.105,.39,0,root),shin=this.rod([side*.105,.39,0],[side*.105,.10,0],.067,pants,root);this.ell(.085,.062,.145,this.mat('#f2eee4'),side*.105,.065,.05,root);legs.push({side,thigh,knee,shin});}
    this.box(.065,.075,.009,this.mat('#f5f4e7'),.10,.14,.139,torso);this.box(.045,.015,.012,this.mat('#d6b26b'),.10,.16,.147,torso);
   }
-  return {root,torso,chest,neck,head,eyes,lids,brows,mouth,arms,skin,eyeParts,hairCap};
+  return {root,torso,legs,chest,neck,head,eyes,lids,brows,mouth,arms,skin,eyeParts,hairCap};
  }
  equipment(){const metal=this.mat('#aabbbd',.3,.55),dark=this.mat('#213e49'),screen=this.mat('#122731'),cream=this.mat('#e3e8df');
+  const sceneRoot=this.scene;this.scene=this.floorGroup;
   this.box(.65,.75,.55,this.mat('#537c84'),1.35,.55,.65);this.box(.72,.08,.62,cream,1.35,.97,.65);for(let i=0;i<3;i++)this.box(.5,.025,.03,metal,1.35,.35+i*.18,.95);
   const defib=this.box(.55,.36,.25,cream,1.35,1.19,.65);defib.userData.pick='electrical';this.monitorCanvas=document.createElement('canvas');this.monitorCanvas.width=512;this.monitorCanvas.height=300;this.monitorTexture=new T.CanvasTexture(this.monitorCanvas);this.monitorTexture.encoding=T.sRGBEncoding;const live=new T.Mesh(new T.PlaneGeometry(.44,.26),new T.MeshBasicMaterial({map:this.monitorTexture}));live.position.set(1.3,1.23,.79);live.userData.pick='electrical';this.scene.add(live);this.ell(.042,.042,.01,this.mat('#daac57'),1.56,1.18,.79).userData.pick='electrical';
-  this.rod([1.05,0,-1.5],[1.05,2.4,-1.5],.018,metal);this.rod([.9,2.36,-1.5],[1.22,2.36,-1.5],.015,metal);this.ell(.065,.16,.035,this.mat('#d7e6de',.2),1.17,2.12,-1.5);
-  const padmat=this.mat('#e3dfb9');this.pad1=this.box(.11,.006,.13,padmat,-.085,1.437,-.2);this.pad1.rotation.z=.17;this.pad2=this.box(.11,.006,.14,padmat,.19,1.369,-.01);this.pad2.rotation.z=-.7;// AHA anterolateral: right infraclavicular parasternal + left mid-axillary at the apexthis.pad1.visible=false;this.pad2.visible=false;
-  const curve=new T.CatmullRomCurve3([new T.Vector3(.23,1.36,-.04),new T.Vector3(.6,1.2,.3),new T.Vector3(.9,1,.5),new T.Vector3(1.3,1.2,.7)]);this.cable=this.mesh(new T.TubeGeometry(curve,24,.009,6,false),this.mat('#303d40'));this.cable.visible=false;
+  this.rod([1.05,0,-1.5],[1.05,2.4,-1.5],.018,metal);this.rod([.9,2.36,-1.5],[1.22,2.36,-1.5],.015,metal);this.ell(.065,.16,.035,this.mat('#d7e6de',.2),1.17,2.12,-1.5);this.scene=sceneRoot;
+  const padmat=this.mat('#e3dfb9');this.padMat=padmat;padmat.emissive=new T.Color('#000000');this.pad1=this.box(.11,.006,.13,padmat,-.085,1.437,-.2);this.pad1.rotation.z=.17;this.pad2=this.box(.11,.006,.14,padmat,.19,1.369,-.01);this.pad2.rotation.z=-.7;// AHA anterolateral: right infraclavicular parasternal + left mid-axillary at the apexthis.pad1.visible=false;this.pad2.visible=false;
+  const curve=new T.CatmullRomCurve3([new T.Vector3(.23,1.36,-.04),new T.Vector3(.55,1.22,.25),new T.Vector3(.95,1.4,.5),new T.Vector3(1.3,SC_FLOOR+1.2,.7)]);this.cable=this.mesh(new T.TubeGeometry(curve,24,.009,6,false),this.mat('#303d40'));this.cable.visible=false;
   this.bag=this.ell(.09,.08,.19,this.mat('#89c9af',.3),.1,1.6,-.77);this.bag.visible=false;this.mask=this.ell(.065,.04,.08,new T.MeshStandardMaterial({color:'#c7e3da',transparent:true,opacity:.65,roughness:.2}),...BVM_ANCHORS.mask);this.mask.visible=false;
   const connectorMaterial=this.mat('#dde8e2',.35);this.maskConnector=new T.Group();this.scene.add(this.maskConnector);
   this.rod([0,1.53,-.5],[0,1.58,-.5],.018,connectorMaterial,this.maskConnector);this.rod([0,1.58,-.5],[.1,1.6,-.58],.018,connectorMaterial,this.maskConnector);
   this.airwayTube=new T.Group();this.scene.add(this.airwayTube);const tubePath=new T.CatmullRomCurve3([new T.Vector3(.007,1.415,-.457),new T.Vector3(.007,1.47,-.459),new T.Vector3(.014,1.53,-.47),new T.Vector3(.05,1.578,-.528),new T.Vector3(.1,1.6,-.58)]);this.mesh(new T.TubeGeometry(tubePath,24,.0105,8,false),connectorMaterial,this.airwayTube);// ETT exits the mouth (lips at y≈1.451, z≈-.459)
   const depthMark=this.mesh(new T.CylinderGeometry(.0118,.0118,.006,12),this.mat('#20262a'),this.airwayTube);depthMark.position.set(.007,1.462,-.459);const tie=this.box(.07,.006,.012,this.mat('#f4f1e6'),.007,1.452,-.462);this.airwayTube.add(tie);
   this.maskConnector.visible=this.airwayTube.visible=false;
+  // Conductive gel under each pad site, a flash light for the shock, and the defibrillator's charge lamp.
+  const gelMat=new T.MeshStandardMaterial({color:'#8fd3f2',transparent:true,opacity:.55,roughness:.15});this.gels=[this.ell(.05,.004,.06,gelMat,-.085,1.433,-.2),this.ell(.05,.004,.065,gelMat,.185,1.366,-.01)];this.gels[0].rotation.z=.17;this.gels[1].rotation.z=-.7;for(const g of this.gels)g.visible=false;
+  this.gelTube=new T.Group();this.scene.add(this.gelTube);this.mesh(new T.CylinderGeometry(.016,.02,.11,12),this.mat('#f4f7f8',.4),this.gelTube);this.mesh(new T.CylinderGeometry(.006,.012,.025,10),this.mat('#3aa7d8',.4),this.gelTube).position.y=-.066;this.gelTube.visible=false;
+  this.shockLight=new T.PointLight('#bfe6ff',0,3.5);this.shockLight.position.set(0,1.75,-.1);this.scene.add(this.shockLight);
+  this.chargeLamp=this.ell(.022,.022,.012,new T.MeshStandardMaterial({color:'#5b1a16',emissive:'#ff3b30',emissiveIntensity:0}),1.14,SC_FLOOR+1.18,.79);this.chargeLamp.userData.pick='electrical';
   this.steth=new T.Group();this.scene.add(this.steth);this.mesh(new T.CylinderGeometry(.022,.022,.008,20),this.mat('#c9d3d8',.25),this.steth).position.y=.004;this.mesh(new T.CylinderGeometry(.008,.008,.02,10),this.mat('#8a979e',.3),this.steth).position.y=.016;this.mesh(new T.TubeGeometry(new T.CatmullRomCurve3([new T.Vector3(0,.026,0),new T.Vector3(.03,.14,.02),new T.Vector3(.1,.24,.05),new T.Vector3(.2,.3,.06)]),16,.006,6,false),this.mat('#2c3b44'),this.steth);this.steth.visible=false;
   // Crash / med cart (clickable): red body, drawers, tray with vials and syringes.
-  const cart=new T.Group();cart.position.set(2.05,0,-1.35);cart.rotation.y=-.6;this.scene.add(cart);const red=this.mat('#b8463c',.5),drawer=this.mat('#d9675b',.45),handle=this.mat('#e9eef0',.3,.6);
+  const cart=new T.Group();cart.position.set(2.05,0,-1.35);cart.rotation.y=-.6;this.floorGroup.add(cart);const red=this.mat('#b8463c',.5),drawer=this.mat('#d9675b',.45),handle=this.mat('#e9eef0',.3,.6);
   this.box(.62,.92,.5,red,0,.52,0,cart);for(let i=0;i<4;i++){this.box(.56,.16,.02,drawer,0,.2+i*.2,.26,cart);this.box(.22,.025,.02,handle,0,.25+i*.2,.28,cart);}
   this.box(.66,.04,.54,this.mat('#e3e8df'),0,1.0,0,cart);for(let i=0;i<5;i++){const v=this.mesh(new T.CylinderGeometry(.022,.022,.07,10),this.mat(['#f6d8e8','#dff1ff','#fff2b8','#d9f5e4','#ffd2c2'][i],.3),cart);v.position.set(-.2+i*.1,1.06,-.08);}
   for(let i=0;i<3;i++){const sy=this.mesh(new T.CylinderGeometry(.012,.012,.16,8),this.mat('#f4fbfc',.2),cart);sy.rotation.z=Math.PI/2;sy.position.set(-.05+i*.05,1.04,.12);}
@@ -137,7 +155,7 @@ export class Ward {
  }
  orbitBy(yaw=0,pitch=0,zoom=1){const offset=this.desired.clone().sub(this.target),radius=Math.max(2.2,Math.min(4.1,offset.length()*zoom)),azimuth=Math.atan2(offset.x,offset.z)+yaw,elevation=Math.max(.22,Math.min(1.18,Math.asin(offset.y/offset.length())+pitch));this.desired.set(this.target.x+radius*Math.cos(elevation)*Math.sin(azimuth),this.target.y+radius*Math.sin(elevation),this.target.z+radius*Math.cos(elevation)*Math.cos(azimuth));}
  roleLabel(person,role){const canvas=document.createElement('canvas');canvas.width=512;canvas.height=144;const texture=new T.CanvasTexture(canvas);texture.encoding=T.sRGBEncoding;const sprite=new T.Sprite(new T.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false,sizeAttenuation:false}));sprite.scale.set(.20,.056,1);sprite.renderOrder=20;sprite.userData.pick=person.root.userData.pick;this.scene.add(sprite);const leader=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3()]),new T.LineBasicMaterial({color:'#c8ede1',transparent:true,opacity:.65,depthTest:false,depthWrite:false}));leader.renderOrder=19;this.scene.add(leader);return {person,role,canvas,texture,sprite,leader,status:''};}
- updateRoleLabels(statuses){for(let i=0;i<this.roleLabels.length;i++){const label=this.roleLabels[i];label.sprite.visible=this.labelsVisible&&this.sceneActive!==false;label.person.head.getWorldPosition(label.sprite.position);label.sprite.position.y+=.30;const status=statuses[i];if(label.status===status)continue;label.status=status;const x=label.canvas.getContext('2d');x.clearRect(0,0,512,144);const rr=(a,b,w,h,r)=>{x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();};rr(4,8,504,128,64);x.fillStyle='rgba(16,30,34,.42)';x.fill();x.lineWidth=3;x.strokeStyle='rgba(255,255,255,.5)';x.stroke();const g=x.createLinearGradient(0,8,0,72);g.addColorStop(0,'rgba(255,255,255,.22)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;rr(6,10,500,62,58);x.fill();x.textAlign='center';x.textBaseline='middle';x.font='600 54px -apple-system,"SF Pro Text",Inter,"Helvetica Neue",sans-serif';x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=8;x.fillStyle='#ffffff';const nice=label.role.toLowerCase().replace(/(^|[ /])([a-z])/g,(m,a,b)=>a+b.toUpperCase());x.fillText(nice,256,74);x.shadowBlur=0;label.texture.needsUpdate=true;}
+ updateRoleLabels(statuses){for(let i=0;i<this.roleLabels.length;i++){const label=this.roleLabels[i];label.sprite.visible=this.labelsVisible&&this.sceneActive!==false;label.person.head.getWorldPosition(label.sprite.position);label.sprite.position.y+=.30;const status=statuses[i];if(label.status===status)continue;label.status=status;const x=label.canvas.getContext('2d');x.clearRect(0,0,512,144);const rr=(a,b,w,h,r)=>{x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();};rr(4,8,504,128,64);x.fillStyle='rgba(16,30,34,.42)';x.fill();x.lineWidth=3;x.strokeStyle='rgba(255,255,255,.5)';x.stroke();const g=x.createLinearGradient(0,8,0,72);g.addColorStop(0,'rgba(255,255,255,.22)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;rr(6,10,500,62,58);x.fill();x.textAlign='center';x.textBaseline='middle';x.font=uiCanvasFont('600 54px Bahnschrift,"Avenir Next","Segoe UI",sans-serif');x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=8;x.fillStyle='#ffffff';const nice=label.role.toLowerCase().replace(/(^|[ /])([a-z])/g,(m,a,b)=>a+b.toUpperCase());x.fillText(nice,256,74);x.shadowBlur=0;label.texture.needsUpdate=true;}
   const width=this.canvas.clientWidth,height=this.canvas.clientHeight;if(!width||!height)return;
   this.camera.updateMatrixWorld();
   const anchors=this.roleLabels.map(label=>{const point=label.sprite.position.clone().project(this.camera);return {x:(point.x+1)*width/2,y:(1-point.y)*height/2,z:point.z,visible:label.sprite.visible&&point.z>-1&&point.z<1&&Math.abs(point.x)<1.15&&Math.abs(point.y)<1.15};});
@@ -152,17 +170,35 @@ export class Ward {
   }
  }
  procedure(name,active){if(!active){delete this.procedureStarts[name];return 0;}if(this.procedureStarts[name]===undefined)this.procedureStarts[name]=this.time;return procedureBlend(this.time-this.procedureStarts[name]);}
- smoothPerson(person,dt){for(const vector of [person.root.position,person.torso.position,person.torso.rotation,person.head.rotation,...person.arms.flatMap(a=>[a.shoulder.rotation,a.elbow.rotation])]){let old=this.poseCache.get(vector);if(!old){old={x:vector.x,y:vector.y,z:vector.z};this.poseCache.set(vector,old);}for(const axis of ['x','y','z']){old[axis]=smoothValue(old[axis],vector[axis],dt);vector[axis]=old[axis];}}}
- cameraPreset(name){const presets={overview:[[3.9,3.25,4.7],[0,1.1,-.15]],patient:[[1.6,2.45,1.6],[0,1.3,-.35]],airway:[[-1.9,3.1,-2.0],[0,1.3,-.7]],defib:[[3.2,2.1,2.5],[.65,1.1,.25]],monitor:[[2.2,3,2.8],[0,1.3,0]],intro:[[5.2,3.2,5.9],[0,1,-.35]]};const p=presets[name]||presets.overview;this.desired.set(...p[0]);this.target.set(...p[1]);if(this.reduced){this.camera.position.copy(this.desired);this.look.copy(this.target);}}
+ smoothPerson(person,dt){for(const vector of [person.root.position,person.torso.position,person.torso.rotation,...(person.hip?[person.hip.rotation]:[]),person.head.rotation,...person.arms.flatMap(a=>[a.shoulder.rotation,a.elbow.rotation])]){let old=this.poseCache.get(vector);if(!old){old={x:vector.x,y:vector.y,z:vector.z};this.poseCache.set(vector,old);}for(const axis of ['x','y','z']){old[axis]=smoothValue(old[axis],vector[axis],dt);vector[axis]=old[axis];}}}
+ cameraPreset(name){const presets={overview:[[3.7,3.45,4.6],[-.05,1.3,-.2]],patient:[[1.05,2.95,1.95],[0,1.32,-.3]],cpr:[[-1.5,2.25,3.0],[-.28,1.62,-.07]],airway:[[-1.9,3.1,-2.0],[0,1.3,-.7]],defib:[[3.0,2.55,2.7],[.95,1.5,.35]],monitor:[[2.2,3,2.8],[0,1.3,0]],intro:[[5.2,3.2,5.9],[0,1,-.35]]};const p=presets[name]||presets.overview;this.desired.set(...p[0]);this.target.set(...p[1]);if(this.reduced){this.camera.position.copy(this.desired);this.look.copy(this.target);}}
  setQuality(q){this.quality=q;this.renderer.setPixelRatio(q==='high'?Math.min(devicePixelRatio,2):q==='low'?1:Math.min(devicePixelRatio,1.5));this.renderer.shadowMap.enabled=q!=='low';this.resize();}
  resize(){const r=this.canvas.parentElement.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix();}
  update(dt,state){this.time+=state?.paused?0:dt;this.state=state||this.state;const s=this.state,t=this.time,idleT=this.reduced?0:t;this.camera.position.lerp(this.desired,this.reduced?1:Math.min(1,dt*4));this.look.lerp(this.target,this.reduced?1:Math.min(1,dt*4));this.camera.lookAt(this.look);
-  if(this.visualSession!==s.session){this.visualSession=s.session;this.procedureStarts={};this.historyAt=null;this.historySeen=false;this.lastExpressionUpdate=null;for(const person of [this.patient,this.compressor,this.airway,this.nurse,this.family,this.bagger]){person.lastConcern=undefined;person.lastSpeaking=undefined;}}
+  if(this.visualSession!==s.session){this.visualSession=s.session;this.procedureStarts={};this.historyAt=null;this.historySeen=false;this.visualTeamClock=0;this.lastExpressionUpdate=null;for(const person of [this.patient,this.compressor,this.airway,this.nurse,this.family,this.bagger]){person.lastConcern=undefined;person.lastSpeaking=undefined;}}
   if(s.history&&!this.historySeen)this.historyAt=t;this.historySeen=!!s.history;
-  const ventilating=!!s.bvm&&!s.clear,motion=teamMotion(s),breath=motion.breath,compression=motion.compression;
-  const depth=(s.cprDepth||5.2)/100;this.patient.chest.scale.z=.48+(motion.compressing?-compression*depth/.25:breath*.025);this.patient.head.rotation.y=s.conscious?Math.sin(idleT*.3)*.04:.035;this.patient.head.rotation.z=s.conscious?Math.sin(idleT*.2)*.02:.04;if(this.patientHair)this.patientHair.visible=[2,3,5].includes(s.id);
+  // Keep the visible 30:2 cycle and strokes in real seconds, independent of scenario speed.
+  if(s.cpr&&!s.paused&&!s.ended)this.visualTeamClock=(this.visualTeamClock||0)+dt;
+  else if(!s.cpr)this.visualTeamClock=0;
+  const ventilating=!!s.bvm&&!s.clear,motion=teamMotion({...s,teamClock:this.visualTeamClock||0,t:this.time});
+  this.visualMotion=motion;
+  const breath=motion.breath;
+  // Firm downstroke that accelerates into the chest, brief full-depth contact, quick complete recoil (≈50% duty).
+  const sp=motion.strokePhase||0,compression=!motion.compressing?0:sp<.40?Math.pow(sp/.40,1.8):sp<.50?1:sp<.92?Math.pow(1-(sp-.50)/.42,2):0;
+  const depth=(s.cprDepth||5.2)/100;
+  // Depress the front chest wall locally; keep the back resting on the mattress.
+  const chest=this.patient.chest,vertices=chest.geometry.attributes.position;
+  if(!this.chestRest)this.chestRest=vertices.array.slice();
+  chest.scale.z=.48;
+  for(let n=0;n<vertices.count;n++){
+   const x=this.chestRest[n*3],y=this.chestRest[n*3+1],z=this.chestRest[n*3+2];
+   const front=Math.max(0,z/Math.max(.001,Math.hypot(x,z)));
+   const sternum=Math.exp(-x*x/.035-(y-.12)*(y-.12)/.05)*front*front;
+   vertices.setZ(n,z-(motion.compressing?compression*depth/.48:0)*sternum+(motion.compressing?0:breath*.006*front));
+  }
+  vertices.needsUpdate=true;chest.geometry.computeVertexNormals();this.patient.head.rotation.y=s.conscious?Math.sin(idleT*.3)*.04:.035;this.patient.head.rotation.z=s.conscious?Math.sin(idleT*.2)*.02:.04;if(this.patientHair)this.patientHair.visible=[2,3,5].includes(s.id);
   if(this.gown){this.gown.visible=!s.cpr&&!s.pads;this.gownSides.visible=!this.gown.visible;}
-  const guarding=s.conscious&&(s.id===4||s.id===3&&s.unstable);this.patient.arms[1].shoulder.rotation.x=guarding?-.18:0;this.patient.arms[1].shoulder.rotation.z=guarding?-.35:s.pads?.32:0;this.patient.arms[1].elbow.rotation.x=guarding?-.35:0;
+  const guarding=s.conscious&&(s.id===4||s.id===3&&s.unstable);this.patient.head.rotation.x=0;this.patient.arms[0].shoulder.rotation.set(0,0,0);this.patient.arms[0].elbow.rotation.x=0;this.patient.arms[1].shoulder.rotation.x=guarding?-.18:0;this.patient.arms[1].shoulder.rotation.z=guarding?-.35:s.pads?.32:0;this.patient.arms[1].elbow.rotation.x=guarding?-.35:0;
   for(const [index,person] of [this.patient,this.compressor,this.airway,this.nurse,this.family,this.bagger].entries()){
    const role=index===0?'patient':index===4?'family':'team';const face=facialTargets(s,role,t,this.historyAt,this.reduced);
    const expressiveDt=s.paused?0:dt;person.concern=smoothValue(person.concern??face.concern,face.concern,expressiveDt,6);
@@ -172,20 +208,62 @@ export class Ward {
    for(const [i,brow]of person.brows.entries())brow.rotation.z=(i?1:-1)*person.concern*.20;
    person.mouth.scale.y=smoothValue(person.mouth.scale.y,.005+face.speaking*.18,expressiveDt,20);
   }
-  this.step.visible=!!s.cpr;this.compressor.root.position.set(s.cpr?-.88:-.85,s.cpr?.42:0,-.15);this.compressor.torso.position.z=s.cpr?.12:0;this.compressor.torso.rotation.x=s.cpr?.4+compression*.025:.04;if(s.fatigued&&s.cpr){this.compressor.torso.rotation.x=.55+compression*.012;this.compressor.torso.position.z=.16;}
-  for(const [i,a]of this.compressor.arms.entries()){a.shoulder.rotation.x=s.cpr?-1.1:0;a.shoulder.rotation.z=s.cpr?(i?-.14:.14):0;a.elbow.rotation.x=s.cpr?-.22:-.08;}
-  if(s.clear){for(const a of this.compressor.arms){a.shoulder.rotation.x=-.5;a.elbow.rotation.x=-1.4;}}
-  this.smoothPerson(this.compressor,s.clear?.5:s.paused?0:dt);this.compressor.root.updateMatrixWorld(true);
+  // CPR rig (AHA 2025 adult BLS): rescuer on a step stool, thighs against the bed, shoulders over the
+  // lower half of the sternum, elbows locked; the stroke is a hip hinge driven by body weight.
+  this.step.visible=true;
+  const K=SC_CPR_SCALE,CPR_Z=-.12,feetY=SC_FLOOR+SC_STOOL;
+  this.compressor.root.position.set(SC_CPR_FEET_X,feetY,CPR_Z);this.step.position.z=CPR_Z;
+  this.cprReach=smoothValue(this.cprReach||0,s.cpr?1:0,s.paused?0:dt,5);
+  const reach=this.cprReach>.995?1:this.cprReach;
+  const tired=s.cpr&&s.fatigued?1:0;this.cprTired=smoothValue(this.cprTired||0,tired,s.paused?0:dt,2);
+  const stroke=compression*depth;// metres of sternal displacement right now
+  const torsoLen=.535*K,armLen=.594,baseDrop=.03,rise0=Math.min(torsoLen*.98,1.432+armLen-(feetY+.69*K-baseDrop))-.03*this.cprTired;// shoulder height above the hip at full recoil
+  const hipFwd=(-.015-Math.sqrt(Math.max(0,torsoLen*torsoLen-rise0*rise0)))-SC_CPR_FEET_X;// pelvis to the bed edge so the shoulders sit over the sternum
+  const hingeAt=c=>Math.acos(Math.max(-1,Math.min(1,(rise0-c)/torsoLen)));
+  this.compressor.torso.position.set(0,.30,0);this.compressor.torso.rotation.x=0;
+  this.compressor.hip.position.z=(hipFwd/K)*reach;
+  this.compressor.hip.rotation.x=.04+(hingeAt(0)-.04)*reach;
+  for(const a of this.compressor.arms){a.shoulder.rotation.x=-.08;a.shoulder.rotation.z=0;a.elbow.rotation.x=-.08;}
+  this.smoothPerson(this.compressor,s.paused?0:dt);
+  // The stroke itself is never smoothed: shoulders travel straight down with the hands.
+  const hipDrop=(baseDrop+.22*stroke)*reach;
+  this.compressor.hip.position.y=.69-hipDrop/K;
+  this.compressor.hip.rotation.x+=(hingeAt(stroke*.78)-hingeAt(0))*reach;
+  this.compressor.root.updateMatrixWorld(true);
   const connect=(o,a,b)=>{const d=b.clone().sub(a);o.position.copy(a).add(b).multiplyScalar(.5);o.scale.y=d.length();o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),d.normalize());};
-  for(let i=0;i<2;i++){const arm=this.compressor.arms[i],rig=this.cprArms[i];arm.shoulder.visible=!s.cpr;rig.upper.visible=rig.lower.visible=rig.hand.visible=!!s.cpr;if(s.cpr){const start=new T.Vector3();arm.shoulder.getWorldPosition(start);const wrist=new T.Vector3(.005+i*.016,1.445-compression*depth+i*.02,-.11);if(!rig.active)rig.wrist=arm.hand.getWorldPosition(new T.Vector3());rig.wrist.lerp(wrist,1-Math.exp(-(s.paused?0:dt)*12));wrist.copy(rig.wrist);const middle=start.clone().lerp(wrist,.5);middle.y+=.015;connect(rig.upper,start,middle);connect(rig.lower,middle,wrist);rig.hand.position.copy(wrist);}rig.active=!!s.cpr;}
+  // Feet stay planted on the stool; knees flex slightly as the pelvis moves to the bed edge.
+  for(const leg of this.compressor.legs){
+   const x=leg.side*.105,hz=this.compressor.hip.position.z,hy=this.compressor.hip.position.y,knee=new T.Vector3(x,(hy+.10)/2+.01,hz*.5+.05*reach),ankle=new T.Vector3(x,.10,0),hip=new T.Vector3(x,hy,hz);
+   leg.knee.position.copy(knee);connect(leg.thigh,hip,knee);leg.thigh.scale.y/=leg.thigh.geometry.parameters.height;
+   connect(leg.shin,knee,ankle);leg.shin.scale.y/=leg.shin.geometry.parameters.height;
+  }
+  for(let i=0;i<2;i++){
+   const arm=this.compressor.arms[i],rig=this.cprArms[i],active=reach>.001;
+   arm.shoulder.visible=!active;rig.upper.visible=rig.lower.visible=rig.hand.visible=active;
+   if(active){
+    const start=arm.shoulder.getWorldPosition(new T.Vector3());
+    // Heel of the lower hand on the sternum, second hand stacked on top.
+    const wrist=arm.hand.getWorldPosition(new T.Vector3()).lerp(new T.Vector3((i?.012:-.012),1.432-stroke+i*.03,CPR_Z+(i?.012:-.012)),reach);
+    const middle=arm.elbow.getWorldPosition(new T.Vector3()).lerp(start.clone().lerp(wrist,.5),reach);
+    // Locked elbows when fresh; a tired rescuer lets them bend outward.
+    middle.z+=(i?1:-1)*.07*this.cprTired*reach;middle.y-=.02*this.cprTired*reach;
+    connect(rig.upper,start,middle);connect(rig.lower,middle,wrist);rig.hand.position.copy(wrist);rig.hand.rotation.set(0,i?.5:-.5,0);
+   }
+  }
   for(const a of this.airway.arms){a.shoulder.rotation.x=ventilating?-1.0:-.08;a.elbow.rotation.x=ventilating?-.9:-.1;}
   for(const person of [this.airway,this.nurse,this.family]){person.head.rotation.y=Math.sin(idleT*.4)*.035;person.torso.position.y=.99+Math.sin(idleT*1.1)*.003;}
   const padProgress=this.procedure('pads',s.pads),ivProgress=this.procedure('iv',s.iv),airwayProgress=this.procedure('airway',s.intubated);
-  this.pad1.position.y=1.437+(1-padProgress)*.18;this.pad2.position.y=1.369+(1-padProgress)*.18;this.airwayTube.position.y=(1-airwayProgress)*.12;
+  // Pads: gel on both sites first, then each pad is rolled on from one edge and pressed down in turn.
+  const padE=s.pads?this.time-(this.procedureStarts.pads??this.time):99,sm=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);},pk1=sm((padE-.9)/.55),pk2=sm((padE-1.5)/.55);
+  this.padSeq=padE<2.3?padE:null;
+  this.pad1.position.y=1.437+(1-pk1)*.16;this.pad1.rotation.x=(1-pk1)*.7;this.pad2.position.y=1.369+(1-pk2)*.16;this.pad2.rotation.x=(1-pk2)*.7;
+  for(const [i,g] of this.gels.entries()){const k=sm((padE-.1-i*.3)/.45);g.visible=!!s.pads&&padE<(i?1.9:1.3);g.scale.set(.05*Math.max(.01,k),.004,(i?.065:.06)*Math.max(.01,k));}
+  this.gelTube.visible=!!s.pads&&padE<.95;if(this.gelTube.visible){const i=padE<.5?0:1,g=this.gels[i];this.gelTube.position.set(g.position.x+.03*Math.sin(padE*14),g.position.y+.1,g.position.z+.03*Math.cos(padE*11));this.gelTube.rotation.z=.3;}
+this.airwayTube.position.y=(1-airwayProgress)*.12;
   this.ivDressing.visible=this.ivHub.visible=!!s.iv;this.ivDressing.position.y=1.37+(1-ivProgress)*.12;this.ivHub.position.y=1.385+(1-ivProgress)*.12;
-  this.pad1.visible=this.pad2.visible=this.cable.visible=!!s.pads;this.bag.visible=!!s.bvm;this.mask.visible=this.maskConnector.visible=!!s.bvm&&!s.intubated&&!s.airwayProcedure;this.airwayTube.visible=!!s.bvm&&(!!s.intubated||(s.airwayProcedure?.progress||0)>.55);this.bag.scale.y=.08-(Math.max(0,breath)*.025);
+  this.pad1.visible=!!s.pads&&padE>.85;this.pad2.visible=!!s.pads&&padE>1.45;this.cable.visible=!!s.pads&&padE>1.9;this.bag.visible=!!s.bvm;this.mask.visible=this.maskConnector.visible=!!s.bvm&&!s.intubated&&!s.airwayProcedure;this.airwayTube.visible=!!s.bvm&&(!!s.intubated||(s.airwayProcedure?.progress||0)>.55);this.bag.scale.y=.08-(Math.max(0,breath)*.025);
   // Keep the airway clinician's hands attached to the bag and mask throughout ventilation.
-  this.airway.root.position.z=ventilating?-1.45:-1.65;
+  this.airway.root.position.z=ventilating?-1.42:-1.62;
   this.airway.torso.position.z=ventilating?.16:0;
   this.airway.torso.rotation.x=ventilating?.24:0;
   this.smoothPerson(this.airway,s.clear?.5:s.paused?0:dt);this.airway.root.updateMatrixWorld(true);
@@ -197,8 +275,8 @@ export class Ward {
   if(s.auscAnim&&s.auscStart!=null){const e=s.t-s.auscStart,sites=[[0,1.415,.12,0],[.17,1.395,-.1,-.5],[-.17,1.395,-.1,.5]],i=e<3.4?0:e<6.6?1:2,[x,y,z,r]=sites[i];this.steth.visible=true;this.steth.position.set(x,y,z);this.steth.rotation.z=r;}else this.steth.visible=false;
   this.scope.visible=!!s.airwayProcedure&&!s.clear;this.scope.position.set(-.035,1.51,-.51);this.scope.rotation.z=-.22;
   if(s.airwayProcedure)this.airwayTube.position.y=.14*(1-procedureBlend(Math.max(0,s.airwayProcedure.progress-.5),.5));
-  this.family.head.rotation.z=s.rosc?-.025:.09;this.family.head.rotation.x=facialTargets(s,'family',t,this.historyAt,this.reduced).speaking>0?Math.sin(idleT*2.8)*.025:.06;this.compressor.head.rotation.x=s.cpr?(s.fatigued?.5+Math.sin(idleT*2.2)*.06:.18):.04;if(s.fatigued&&s.cpr){this.compressor.mouth.scale.y=.08+.04*Math.sin(idleT*3.4);}this.airway.head.rotation.x=ventilating?.15:.03;
-  this.nurse.arms[0].shoulder.rotation.x=s.iv?-.55:-.08;this.nurse.arms[0].elbow.rotation.x=s.iv?-1.15:-.08;
+  this.family.head.rotation.z=s.rosc?-.025:.09;this.family.head.rotation.x=facialTargets(s,'family',t,this.historyAt,this.reduced).speaking>0?Math.sin(idleT*2.8)*.025:.06;this.compressor.head.rotation.x=s.cpr?(s.fatigued?.22+Math.sin(idleT*2.2)*.06:-.34):.04;if(s.fatigued&&s.cpr){this.compressor.mouth.scale.y=.08+.04*Math.sin(idleT*3.4);}this.airway.head.rotation.x=ventilating?.15:.03;
+  for(const a of this.nurse.arms){a.shoulder.rotation.x=-.08;a.elbow.rotation.x=-.08;}
   this.family.arms[0].shoulder.rotation.x=-.4;this.family.arms[0].elbow.rotation.x=-1.8;
   this.family.arms[1].shoulder.rotation.x=-.25;this.family.arms[1].elbow.rotation.x=-1.65;
   // Procedure poses: nurse reaches for the antecubital IV during adenosine; head turned for carotid massage.
@@ -207,14 +285,26 @@ export class Ward {
   if(s.vagalAnim==='valsalva'){this.patient.head.rotation.x=-.25;this.patient.mouth.scale.y=.06+.03*Math.sin(t*6);}
   // Tired compressor: slumped torso, head drooping, bent elbows, breathing hard.
   // Pain without analgesia: grimace, arms jerk, head turns away.
-  if(this.patientBaseY===undefined)this.patientBaseY=this.patient.root.position.y;const inPain=s.painUntil&&s.t<s.painUntil&&s.conscious;if(inPain){const k=Math.sin(idleT*14);this.patient.head.rotation.y=.35+.08*k;this.patient.mouth.scale.y=.2;for(const b of this.patient.brows)b.rotation.z=(b===this.patient.brows[0]?-1:1)*.5;for(const [i,a] of this.patient.arms.entries()){a.shoulder.rotation.x=-.18+.08*k;a.shoulder.rotation.z=(i?-1:1)*.22;a.elbow.rotation.x=-1.1;}this.patient.root.position.y=this.patientBaseY+.01*Math.abs(k);}else this.patient.root.position.y=this.patientBaseY;
+  if(this.patientBaseY===undefined)this.patientBaseY=this.patient.root.position.y;const inPain=s.painUntil&&s.t<s.painUntil&&s.conscious;if(inPain){const k=Math.sin(idleT*14);this.patient.head.rotation.y=.35+.08*k;this.patient.mouth.scale.y=.2;for(const b of this.patient.brows)b.rotation.z=(b===this.patient.brows[0]?-1:1)*.5;for(const [i,a] of this.patient.arms.entries()){a.shoulder.rotation.x=-.18+.08*k;a.shoulder.rotation.z=(i?-1:1)*.22;a.elbow.rotation.x=-1.1;}this.patient.root.position.y=this.patientBaseY+.01*Math.abs(k);}else{const imp=motion.compressing&&sp>=.40?Math.exp(-(sp-.40)*9)*Math.sin((sp-.40)*38):0;this.patient.root.position.y=this.patientBaseY-(motion.compressing?compression*.008:0);if(motion.compressing&&!this.reduced){this.patient.head.rotation.x=.03*imp-.012*compression;for(const [i,a] of this.patient.arms.entries())a.shoulder.rotation.z=(i?1:-1)*(.012*imp)+(i&&s.pads?.32:0);this.compressor.head.rotation.x+=.06*compression+.04*imp;}}
   // Nurse giving a drug: turn to the IV arm and push.
-  if(s.medAnimUntil&&s.t<s.medAnimUntil){this.nurse.root.rotation.y=-.95;this.nurse.arms[0].shoulder.rotation.x=-1.2;this.nurse.arms[0].elbow.rotation.x=-.5;this.nurse.arms[1].shoulder.rotation.x=-.9;this.nurse.arms[1].elbow.rotation.x=-.9;}else this.nurse.root.rotation.y=-.5;
+  if(s.medAnimUntil&&s.t<s.medAnimUntil){this.nurse.root.rotation.y=-.95;this.nurse.arms[0].shoulder.rotation.x=-.18;this.nurse.arms[0].elbow.rotation.x=-.25;this.nurse.arms[1].shoulder.rotation.x=-.12;this.nurse.arms[1].elbow.rotation.x=-.18;}else this.nurse.root.rotation.y=-.5;
+  if(this.padSeq!=null){this.nurse.root.rotation.y=-1.25;this.nurse.torso.rotation.x=.38;for(const [i,a] of this.nurse.arms.entries()){a.shoulder.rotation.x=-1.05-.12*Math.sin(this.padSeq*6+i);a.elbow.rotation.x=-.35;}}else this.nurse.torso.rotation.x=0;
+  // "Clear": everyone steps back with open hands before the shock.
+  this.nurse.root.position.x=1.25+(s.clear?.32:0);this.bagger.root.position.z=-1.55-(s.clear?.28:0);
+  if(s.clear)for(const person of [this.nurse,this.bagger,this.compressor])for(const a of person.arms){a.shoulder.rotation.x=-.95;a.elbow.rotation.x=-1.75;}
   for(const person of [this.patient,this.nurse,this.family])this.smoothPerson(person,s.paused?0:dt);
+  // Shock: brief muscle jolt, light from the pads, then stillness.
+  if(this.lastShocks===undefined||s.shocks<this.lastShocks)this.lastShocks=s.shocks||0;
+  if((s.shocks||0)>this.lastShocks){this.lastShocks=s.shocks;this.shockAt=this.time;}
+  const se=this.shockAt==null?9:this.time-this.shockAt,jolt=this.reduced?0:se<.07?se/.07:Math.max(0,1-(se-.07)/.42);
+  this.shockLight.intensity=4*Math.max(0,1-se/.22);this.padMat.emissive.setRGB(.5*jolt,.75*jolt,jolt);
+  if(jolt>0){this.patient.root.position.y+=.028*jolt;this.patient.head.rotation.x=-.16*jolt;for(const [i,a] of this.patient.arms.entries()){a.shoulder.rotation.x-=.5*jolt;a.shoulder.rotation.z+=(i?-1:1)*.18*jolt;a.elbow.rotation.x-=.75*jolt;}}
+  this.chargeLamp.material.emissiveIntensity=s.charged?(.6+.4*Math.sin(t*10)):s.charging?(.3+.3*Math.sin(t*22)):0;
+
   this.updateRoleLabels([s.clear?'Hands clear':motion.ventPause?'Pause for two breaths':s.cpr?(s.fatigued?'Tired — slower, shallower!':'Compressions in progress'):'Ready for compressions',s.clear?'Hands clear':s.airwayProcedure?s.airwayProcedure.label:s.intubated?'Advanced airway / capnography':s.bvm?'Bag-mask ventilation':'Assess breathing',s.charged?'Defibrillator charged':s.iv?'Access established':'Prepare access / equipment',s.history?'History shared':'Available for history',s.clear?'Hands clear':s.bvm?'Bag squeeze / chest rise':'Ready to assist ventilation']);
   for(const person of [this.compressor,this.airway,this.nurse,this.family,this.bagger]){const startled=(this.safetyRemaining||0)>0;person.root.rotation.z=startled?(this.reduced?.08:Math.sin(this.safetyRemaining*9)*.08):0;if(startled){for(const a of person.arms){a.shoulder.rotation.x=-1.6;a.elbow.rotation.x=-.7;}person.head.rotation.z=.15;person.mouth.scale.y=.04;}}
   this.renderer.render(this.scene,this.camera);
  }
- drawMonitor(s){if(!this.monitorCanvas)return;const c=this.monitorCanvas.getContext('2d');c.fillStyle='#07171b';c.fillRect(0,0,512,300);c.fillStyle='#a4f3c7';c.font='bold 25px sans-serif';c.fillText(s.monitor?'II  •  LIVE ECG':'ATTACH MONITOR',18,36);if(s.monitor){c.strokeStyle='#89f5ad';c.lineWidth=3;c.beginPath();for(let i=0;i<490;i++){const t=s.t-5+i/98,y=140-waveform(t,displayRhythm(s),s.hr,s.pacerRate||70)*65+(s.cpr?Math.sin(t*12)*7:0);i?c.lineTo(i+10,y):c.moveTo(i+10,y);}c.stroke();if(s.pacing){const rr=60/s.pacerRate,offset=s.electricalCapture?.215:.24;c.beginPath();for(let n=Math.ceil((s.t-5-offset)/rr);n*rr+offset<=s.t;n++){const xx=(n*rr+offset-(s.t-5))*98+10;c.moveTo(xx,140);c.lineTo(xx,39);}c.stroke();}c.fillText('HR '+s.hr+'   SpO₂ '+(s.pulse?(s.spo2??'—'):'—'),18,235);c.fillText('ETCO₂ '+(s.capno?Math.round(s.etco2):'—'),18,275);}this.monitorTexture.needsUpdate=true;}
+ drawMonitor(s){if(!this.monitorCanvas)return;const c=this.monitorCanvas.getContext('2d');c.fillStyle='#07171b';c.fillRect(0,0,512,300);c.fillStyle='#a4f3c7';c.font=uiCanvasFont('bold 25px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(s.monitor?'II  •  LIVE ECG':'ATTACH MONITOR',18,36);if(s.monitor){c.strokeStyle='#89f5ad';c.lineWidth=3;c.beginPath();for(let i=0;i<490;i++){const t=s.t-5+i/98,y=140-waveform(t,displayRhythm(s),s.hr,s.pacerRate||70)*65+(s.cpr?Math.sin(t*12)*7:0);i?c.lineTo(i+10,y):c.moveTo(i+10,y);}c.stroke();if(s.pacing){const rr=60/s.pacerRate,offset=s.electricalCapture?.215:.24;c.beginPath();for(let n=Math.ceil((s.t-5-offset)/rr);n*rr+offset<=s.t;n++){const xx=(n*rr+offset-(s.t-5))*98+10;c.moveTo(xx,140);c.lineTo(xx,39);}c.stroke();}c.fillText('HR '+s.hr+'   SpO₂ '+(s.pulse?(s.spo2??'—'):'—'),18,235);c.fillText('ETCO₂ '+(s.capno?Math.round(s.etco2):'—'),18,275);}this.monitorTexture.needsUpdate=true;}
  dispose(){this.resizeObserver.disconnect();this.renderer.dispose();}
 }
