@@ -44,3 +44,7 @@ See GAMEPLAY-CLARITY.md for compact translucent controls, ECG interpretation, sh
 
 ## Clock, investigations and interactive practice update
 See [PRACTICE-UPDATE.md](PRACTICE-UPDATE.md) for the new shock-check workflow, 1.5x clock, delayed labs, CPR/POCUS practice, required player alias, and verification limits. Calcium gluconate is now at the top of Medications. Treatment controls sit beside or below the scene.
+
+
+## ECG, sound and interaction update
+See [ECG-INTERACTION-REVIEW.md](ECG-INTERACTION-REVIEW.md). Resume CPR is always available; Sound controls charge/shock/compression tones. Action panels replace the monitor; close to see vitals. The16-strip ECG bank excludes a standalone PEA card. CPR tap feedback uses real time; POCUS remains synthetic. Unsafe discharge triggers a comic safety restart.

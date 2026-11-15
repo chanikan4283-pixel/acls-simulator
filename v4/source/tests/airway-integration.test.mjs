@@ -10,11 +10,11 @@ for (const id of [1,2,3,4,5]) {
   const sim=new Simulation(id),queue=new AirwayProcedure();
   sim.action('bvm');queue.start(sim.s.session);
   const advance=dt=>{sim.tick(dt);if(queue.advance(dt,sim.s))sim.action('intubate');};
-  advance(2);
+  advance(1);
   assert.equal(sim.s.intubated,false);assert.equal(sim.s.capno,false);
   const time=sim.s.t;sim.s.paused=true;advance(5);
   assert.equal(sim.s.t,time);assert.equal(sim.s.intubated,false);
-  sim.s.paused=false;advance(6.5);
+  sim.s.paused=false;advance(2.1);
   assert.equal(sim.s.intubated,true);assert.equal(sim.s.capno,false);sim.action('etco2');assert.equal(sim.s.capno,true);
   const score=sim.s.score;advance(.1);assert.equal(sim.s.score,score);
   assert.equal(queue.snapshot(),null);

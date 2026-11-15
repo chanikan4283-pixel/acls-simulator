@@ -374,3 +374,49 @@ body.game-locked .case-library>:not(#lock-panel){filter:blur(3px) saturate(.6);o
 @keyframes lockShake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
 #quick-actions #attach-etco2{background:rgba(255,196,108,.92)!important;color:#2a1d00!important;border:0!important;font-weight:700;animation:epiPulse 1.4s ease-in-out infinite;white-space:normal;line-height:1.2;padding:8px 12px}
 #quick-actions #attach-etco2[hidden]{display:none}
+/* pass 15: clearer flow, idle nudges, pressure moments, cutscene */
+#quick-actions #coach-cpr{background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.2)!important;font-size:15px!important;min-height:48px;white-space:normal;line-height:1.2;padding:8px 12px}
+#quick-actions #coach-cpr.urgent{background:rgba(255,196,108,.92)!important;color:#2a1d00!important;border:0!important;animation:epiPulse 1.2s ease-in-out infinite}
+#quick-actions #check-tube{background:rgba(255,196,108,.92)!important;color:#2a1d00!important;border:0!important;font-weight:700;animation:epiPulse 1.4s ease-in-out infinite;white-space:normal;line-height:1.2;padding:8px 12px}
+#quick-actions [hidden]{display:none!important}
+#idle-hint{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);z-index:6;max-width:min(520px,80%);padding:12px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(20,40,46,.55);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);color:#f4f7f5;font-size:16px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:hintIn .35s ease-out}
+#idle-hint[hidden]{display:none}
+@keyframes hintIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+#pressure{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:0;box-shadow:inset 0 0 120px 30px rgba(255,70,60,.55);transition:opacity .3s}
+body.pressure-on #pressure{animation:pressurePulse 1s ease-in-out infinite}
+@keyframes pressurePulse{0%,100%{opacity:.15}50%{opacity:.75}}
+body.pressure-on #cycle-banner #cb-time{color:#ff9d8f}
+#cutscene{position:absolute;inset:0;z-index:40;pointer-events:auto;overflow:hidden}
+#cutscene[hidden]{display:none}
+.cs-bar{position:absolute;left:0;right:0;height:13%;background:#000;transition:transform .6s ease}
+.cs-bar.top{top:0}.cs-bar.bottom{bottom:0}
+#cutscene.out .cs-bar.top{transform:translateY(-100%)}#cutscene.out .cs-bar.bottom{transform:translateY(100%)}
+.cs-text{position:absolute;left:6%;right:6%;bottom:17%;text-shadow:0 2px 18px rgba(0,0,0,.8)}
+.cs-text small{display:block;font-size:14px;letter-spacing:.24em;text-transform:uppercase;color:#8fe6d2;margin-bottom:10px;font-weight:600}
+.cs-text h2{margin:0;font-size:clamp(24px,3.6vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.15;color:#fff;max-width:900px}
+.cs-text h2.in{animation:csIn .5s ease-out}
+@keyframes csIn{from{opacity:0;transform:translateY(14px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+#cs-skip{position:absolute;right:22px;top:calc(13% + 14px);min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.35);color:#fff;font-size:15px}
+#cutscene::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.55) 100%)}
+@media (prefers-reduced-motion:reduce){body.pressure-on #pressure{animation:none;opacity:.4}}
+body.cutscene :is(#dock,#monitor,#situation-strip,#right-hud,#team-caption,#camera-nav,#stage-clock,#patient-label,#idle-hint,#drawer,.pause-overlay,#pause-banner){visibility:hidden!important}
+.step-label{display:flex;align-items:center;gap:10px;margin:18px 0 8px;font-size:15px;font-weight:700;letter-spacing:-.005em;color:#eef6f5}
+.step-label:first-child{margin-top:4px}
+.step-label i{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:rgba(48,209,168,.2);color:#8ff0d6;font-style:normal;font-size:14px;font-weight:700;flex:none}
+.action-grid.one{grid-template-columns:1fr!important}.action-grid.three{grid-template-columns:repeat(3,1fr)!important}
+.action-grid.three button{min-height:64px!important;font-size:17px!important;font-weight:800;letter-spacing:.02em;text-align:center;justify-content:center}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-card{display:block;text-align:left;padding:14px;border-radius:16px;border:1.5px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#f2fbfa;min-height:104px}
+.mode-card b{display:block;font-size:16px;line-height:1.2;margin-bottom:6px}.mode-card small{display:block;font-size:13px;color:#cfe0e2;line-height:1.3}.mode-card em{display:block;margin-top:6px;font-style:normal;font-size:12px;color:#9fb9bb}
+.mode-card.active{border-color:#30d1a8;background:rgba(48,209,168,.18);box-shadow:0 0 0 3px rgba(48,209,168,.18)}
+.mode-card.active b::after{content:" ✓";color:#8ff0d6}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+details.more{margin-top:16px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);padding:0 12px}
+details.more>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-size:15px;font-weight:600;color:#cfe0e2;list-style:none}
+details.more>summary::after{content:"＋";margin-left:auto;opacity:.7}details.more[open]>summary::after{content:"－"}
+details.more>summary::-webkit-details-marker{display:none}
+details.more[open]{padding-bottom:12px}
+.coach-btn{display:block;width:100%;text-align:left;margin:10px 0 2px;padding:12px 14px;border-radius:16px;border:1.5px dashed rgba(143,240,214,.55)!important;background:rgba(48,209,168,.10)!important;color:#f2fbfa;min-height:62px}
+.coach-btn b{display:block;font-size:16px}.coach-btn small{display:block;font-size:13px;color:#cfe0e2;margin-top:2px}
+body.cutscene #play-layout{grid-template-columns:minmax(0,1fr) 0!important}
+body.cutscene #monitor{display:none!important}

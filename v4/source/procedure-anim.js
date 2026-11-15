@@ -14,7 +14,7 @@ export const PROCEDURES={
   [3,'No bruit heard · one side only, never both'],
   [4.2,'Firm circular massage at the angle of the jaw for 5–10 s'],
   [11,'Stop and reassess the rhythm']]},
- push:{title:'Giving medication',duration:4.6,mini:true,steps:[[0,'Read back: drug · dose · route'],[1.0,'Push through the port closest to the patient'],[2.4,'Flush 20 mL saline'],[3.6,'Raise the limb · time noted']]},
+ push:{title:'Giving medication',duration:4.6,mini:true,steps:[[0,'Read back: drug · dose · route'],[1.0,'Push through the port closest to the patient'],[2.4,'Flush 20 mL saline'],[3.6,'Time noted']]},
  patch:{title:'Inspect the back · fentanyl patch',duration:10,steps:[
   [0,'Log-roll the patient toward you with the team'],
   [1.8,'Inspect the back, skin folds and under dressings'],
@@ -163,7 +163,7 @@ const PA_DRAW={
  },
  push(c,t,{label}){paBg(c,'#24363c','#0f1c21');c.fillStyle='#24363c';c.fillRect(0,350,720,70);
   // Forearm with IV hub, extension set and a port; drug syringe then flush.
-  const lift=seg(t,3.6,4.3)*-.15;c.save();c.translate(70,300);c.rotate(lift);c.fillStyle='#e0b291';c.beginPath();c.roundRect?c.roundRect(0,-30,600,60,30):c.rect(0,-30,600,60);c.fill();c.fillStyle='#ffffffcc';c.fillRect(260,-34,64,28);c.fillStyle='#f4c542';c.fillRect(278,-40,28,10);
+  c.save();c.translate(70,300);c.fillStyle='#e0b291';c.beginPath();c.roundRect?c.roundRect(0,-30,600,60,30):c.rect(0,-30,600,60);c.fill();c.fillStyle='#ffffffcc';c.fillRect(260,-34,64,28);c.fillStyle='#f4c542';c.fillRect(278,-40,28,10);
   c.strokeStyle='#cfe7ee';c.lineWidth=6;c.beginPath();c.moveTo(292,-40);c.quadraticCurveTo(300,-110,360,-130);c.stroke();c.fillStyle='#e9eef0';c.beginPath();c.arc(362,-132,14,0,Math.PI*2);c.fill();
   const drug=seg(t,1.0,2.2),flush=seg(t,2.4,3.4);const first=t<2.3;
   const push=first?drug:flush,len=first?120:170,r=first?16:22,fluid=first?'#f6d8e8':'#dff1ff',name=first?(label||'DRUG'):'NS 20 mL FLUSH';
@@ -306,4 +306,80 @@ export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{}}={}){
   c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText(`Removed: ${removed}`,20,404);
   raf=requestAnimationFrame(frame);};
  raf=requestAnimationFrame(frame);return {el,close};
+}
+
+/* Interactive chest check: the learner places the stethoscope on each site. kind: 'tube' | 'bvm' | 'spont' | 'apnea'. */
+export function playListen(host,{kind='tube',onDone=()=>{},onCancel=()=>{},onSite=()=>{}}={}){
+ document.getElementById('proc-screen')?.remove();
+ const el=document.createElement('div');el.id='proc-screen';el.classList.add('interactive');
+ const title=kind==='tube'?'CHECK TUBE POSITION':'LISTEN TO THE CHEST';
+ el.innerHTML=`<div class="proc-head"><b>${title}</b><span>Tap each glowing spot to place the stethoscope</span><button class="proc-skip" aria-label="Close">✕</button></div><canvas width="720" height="420" aria-label="Chest: tap the three listening sites"></canvas><p class="proc-step" role="status">${kind==='tube'?'Start over the stomach, then both sides of the chest.':'Listen on both sides.'}</p>`;
+ host.appendChild(el);const cv=el.querySelector('canvas'),c=cv.getContext('2d'),msg=el.querySelector('.proc-step');
+ const cx=330,cy=272,breathing=kind!=='apnea',vent=kind==='tube'||kind==='bvm';
+ const sites=[{x:cx,y:cy+86,name:'Epigastrium',res:vent?'Silent — no gurgling':'Quiet',ok:true},{x:cx+132,y:cy-6,name:'Left chest',res:breathing?'Breath sounds present':'No breath sounds',ok:breathing},{x:cx-132,y:cy-6,name:'Right chest',res:breathing?'Breath sounds present — equal':'No breath sounds',ok:breathing}];
+ let t=0,last=performance.now(),raf=0,closed=false,cur=-1,curAt=0,doneAt=0,sx=560,sy=90;
+ const close=ok=>{if(closed)return;closed=true;cancelAnimationFrame(raf);el.remove();ok?onDone():onCancel();};
+ el.querySelector('.proc-skip').onclick=()=>close(sites.every(s=>s.heard));
+ cv.onpointerdown=e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*720/r.width,y=(e.clientY-r.top)*420/r.height;const i=sites.findIndex(s=>Math.hypot(x-s.x,y-s.y)<58);if(i<0){msg.textContent='Tap one of the glowing spots.';return;}cur=i;curAt=t;sites[i].heard=true;onSite(i,sites[i]);msg.textContent=`${sites[i].name}: ${sites[i].res}`;if(sites.every(s=>s.heard)&&!doneAt)doneAt=t+1.6;};
+ const frame=now=>{if(closed)return;t+=Math.min(.25,(now-last)/1000);last=now;
+  const g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,'#22363d');g.addColorStop(1,'#0f1c21');c.fillStyle=g;c.fillRect(0,0,720,420);
+  const br=breathing&&cur>=0?Math.max(0,Math.sin(Math.PI*Math.min(1,(t-curAt)/1.3))):0;
+  c.fillStyle='#98cbd1';c.beginPath();c.ellipse(cx,cy+150,210,90,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#d9a988';c.beginPath();c.ellipse(cx,cy,168*(1+.035*br),128*(1+.05*br),0,0,Math.PI*2);c.fill();
+  c.fillStyle='#cf9c7c';c.fillRect(cx-28,cy-150,56,40);c.fillStyle='#e0b291';c.beginPath();c.ellipse(cx,cy-178,46,54,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#70727b';c.beginPath();c.ellipse(cx,cy-214,44,22,0,Math.PI,0);c.fill();
+  c.strokeStyle='#c08d6e';c.lineWidth=2;c.beginPath();c.moveTo(cx,cy-110);c.lineTo(cx,cy+40);c.stroke();
+  if(kind==='tube'){c.strokeStyle='#e8f1ee';c.lineWidth=7;c.beginPath();c.moveTo(cx,cy-150);c.quadraticCurveTo(cx-6,cy-205,cx-70,cy-232);c.stroke();}
+  if(vent){c.fillStyle='#89c9af';c.beginPath();c.ellipse(cx-120,cy-238,58*(1-.35*br),30,-.3,0,Math.PI*2);c.fill();}
+  sites.forEach((s,i)=>{const pulse=1+.12*Math.sin(t*5+i);c.lineWidth=3;c.strokeStyle=s.heard?(s.ok?'#8af0b5':'#ffb4a8'):'#ffe2a8';c.setLineDash(s.heard?[]:[7,6]);c.beginPath();c.arc(s.x,s.y,(s.heard?30:34)*(s.heard?1:pulse),0,Math.PI*2);c.stroke();c.setLineDash([]);
+   c.font=uiCanvasFont('bold 13px sans-serif');c.textAlign='center';c.fillStyle=s.heard?(s.ok?'#bff3e2':'#ffd3cb'):'#ffe2a8';c.fillText(s.heard?(s.ok?'✓ ':'✕ ')+s.name:s.name,s.x,s.y+(i?58:56));c.textAlign='left';});
+  const tgt=cur>=0?sites[cur]:{x:560,y:90};sx+=(tgt.x-sx)*.25;sy+=(tgt.y-sy)*.25;
+  c.strokeStyle='#2c3b44';c.lineWidth=5;c.beginPath();c.moveTo(sx,sy);c.bezierCurveTo(sx+40,sy-90,620,40,700,20);c.stroke();
+  c.fillStyle='#c9d3d8';c.beginPath();c.arc(sx,sy,19,0,Math.PI*2);c.fill();c.fillStyle='#8a979e';c.beginPath();c.arc(sx,sy,12,0,Math.PI*2);c.fill();
+  if(cur>0&&br>.1&&breathing){c.strokeStyle=`rgba(160,240,210,${.4+.6*br})`;c.lineWidth=3;for(let k=1;k<=3;k++){c.beginPath();c.arc(sx,sy,22+k*12*br,cur===1?-.9:Math.PI-.9,cur===1?.9:Math.PI+.9);c.stroke();}}
+  c.fillStyle='#0b171bcc';c.fillRect(520,300,190,96);sites.forEach((s,i)=>{c.font=uiCanvasFont('13px sans-serif');c.fillStyle=s.heard?(s.ok?'#8af0b5':'#ffb4a8'):'#d5e2e4';c.fillText((s.heard?(s.ok?'✓ ':'✕ '):'○ ')+s.name,532,324+i*26);});
+  if(doneAt&&t>=doneAt)return close(true);
+  raf=requestAnimationFrame(frame);};
+ raf=requestAnimationFrame(frame);return {el,close,skip:()=>close(sites.every(s=>s.heard))};
+}
+
+/* Interactive pad placement: the learner taps where each pad goes (anterolateral). */
+export function playPads(host,{onDone=()=>{},onCancel=()=>{},onTap=()=>{}}={}){
+ document.getElementById('proc-screen')?.remove();
+ const el=document.createElement('div');el.id='proc-screen';el.classList.add('interactive');
+ el.innerHTML=`<div class="proc-head"><b>PLACE THE PADS</b><span>Tap the two places where the pads go</span><button class="proc-skip" aria-label="Close">✕</button></div><canvas width="720" height="420" aria-label="Chest: tap the two pad positions"></canvas><p class="proc-step" role="status">Bare, dry chest. Where do the two pads go?</p>`;
+ host.appendChild(el);const cv=el.querySelector('canvas'),c=cv.getContext('2d'),msg=el.querySelector('.proc-step');
+ const cx=330,cy=262;
+ /* The viewer faces the patient: the patient's right is on the left of the picture. */
+ const zones=[{x:cx-78,y:cy-78,ok:true,name:'Right upper chest, below the collarbone',tip:'Pad 1: right of the sternum, just below the clavicle.'},
+  {x:cx+138,y:cy+18,ok:true,name:'Left side, below the armpit',tip:'Pad 2: left mid-axillary line at the apex.'},
+  {x:cx,y:cy-20,ok:false,tip:'Not over the sternum — bone blocks the current.'},
+  {x:cx+72,y:cy-70,ok:false,tip:'Too close to the other pad — the current must cross the heart.'},
+  {x:cx,y:cy+92,ok:false,tip:'Not on the abdomen.'},
+  {x:cx-132,y:cy+26,ok:false,tip:'Wrong side for the lateral pad.'}];
+ let t=0,last=performance.now(),raf=0,closed=false,wrong=0,doneAt=0;
+ const close=ok=>{if(closed)return;closed=true;cancelAnimationFrame(raf);el.remove();ok?onDone():onCancel();};
+ el.querySelector('.proc-skip').onclick=()=>close(zones.filter(z=>z.ok).every(z=>z.placed));
+ cv.onpointerdown=e=>{if(doneAt)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*720/r.width,y=(e.clientY-r.top)*420/r.height;const z=zones.filter(z=>Math.hypot(x-z.x,y-z.y)<46).sort((a,b)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-b.x,y-b.y))[0];if(!z){msg.textContent='Tap on the chest.';return;}
+  if(z.ok){if(!z.placed){z.placed=t;onTap(true);msg.textContent=z.tip;}if(zones.filter(z=>z.ok).every(z=>z.placed)){doneAt=t+1.3;msg.textContent='Both pads on: the heart sits between them. Press firmly, no air gaps.';}}
+  else{wrong++;z.flash=t;onTap(false);msg.textContent=z.tip;}};
+ const frame=now=>{if(closed)return;t+=Math.min(.25,(now-last)/1000);last=now;
+  const g=c.createLinearGradient(0,0,0,420);g.addColorStop(0,'#22363d');g.addColorStop(1,'#0f1c21');c.fillStyle=g;c.fillRect(0,0,720,420);
+  c.fillStyle='#98cbd1';c.beginPath();c.ellipse(cx,cy+150,230,90,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#d9a988';c.beginPath();c.ellipse(cx,cy,176,132,0,0,Math.PI*2);c.fill();
+  for(const sx of[-1,1]){c.fillStyle='#d3a181';c.beginPath();c.ellipse(cx+sx*196,cy+30,34,96,sx*.12,0,Math.PI*2);c.fill();}
+  c.fillStyle='#cf9c7c';c.fillRect(cx-28,cy-152,56,40);c.fillStyle='#e0b291';c.beginPath();c.ellipse(cx,cy-180,46,54,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#70727b';c.beginPath();c.ellipse(cx,cy-216,44,22,0,Math.PI,0);c.fill();
+  c.strokeStyle='#c08d6e';c.lineWidth=2;c.beginPath();c.moveTo(cx-120,cy-104);c.quadraticCurveTo(cx,cy-86,cx+120,cy-104);c.moveTo(cx,cy-96);c.lineTo(cx,cy+30);c.stroke();
+  c.fillStyle='#b98568';for(const x of[-66,66]){c.beginPath();c.arc(cx+x,cy-26,5,0,Math.PI*2);c.fill();}
+  /* faint heart to explain the vector once a pad is on */
+  if(zones.some(z=>z.placed)){c.fillStyle='rgba(220,90,90,.25)';c.beginPath();c.ellipse(cx+26,cy-22,44,38,-.4,0,Math.PI*2);c.fill();}
+  for(const z of zones){if(z.ok&&z.placed){const k=Math.min(1,(t-z.placed)/.35);c.save();c.translate(z.x,z.y-40*(1-k));c.rotate(z.x<cx?-.2:.5);c.globalAlpha=k;c.fillStyle='#f4f1e6';c.strokeStyle='#8fa5ad';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-34,-42,68,84,12):c.rect(-34,-42,68,84);c.fill();c.stroke();c.fillStyle='#d9534f';c.beginPath();c.arc(0,-8,10,0,Math.PI*2);c.fill();c.restore();}
+   else if(!z.ok&&z.flash&&t-z.flash<.8){c.strokeStyle=`rgba(255,120,110,${1-(t-z.flash)/.8})`;c.lineWidth=5;c.beginPath();c.moveTo(z.x-18,z.y-18);c.lineTo(z.x+18,z.y+18);c.moveTo(z.x+18,z.y-18);c.lineTo(z.x-18,z.y+18);c.stroke();}
+   else if(z.ok&&!z.placed&&wrong>=2){c.strokeStyle='#ffe2a8';c.lineWidth=3;c.setLineDash([7,6]);c.beginPath();c.arc(z.x,z.y,38*(1+.08*Math.sin(t*5)),0,Math.PI*2);c.stroke();c.setLineDash([]);}}
+  const pl=zones.filter(z=>z.ok&&z.placed);if(pl.length===2){c.strokeStyle='rgba(255,226,120,.8)';c.lineWidth=3;c.setLineDash([10,8]);c.lineDashOffset=-t*40;c.beginPath();c.moveTo(pl[0].x,pl[0].y);c.lineTo(pl[1].x,pl[1].y);c.stroke();c.setLineDash([]);}
+  c.font=uiCanvasFont('12px sans-serif');c.fillStyle='#9fb6bb';c.fillText("Patient's right",cx-250,cy-120);c.fillText("Patient's left",cx+190,cy-120);
+  if(doneAt&&t>=doneAt)return close(true);
+  raf=requestAnimationFrame(frame);};
+ raf=requestAnimationFrame(frame);return {el,close,skip:()=>close(zones.filter(z=>z.ok).every(z=>z.placed))};
 }

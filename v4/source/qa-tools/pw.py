@@ -2,10 +2,10 @@ import asyncio,sys,json
 from playwright.async_api import async_playwright
 URL='file:///home/claude/v4/play.html'
 async def start(page,case=1,mode='guided'):
-    await page.goto(URL); await page.wait_for_timeout(800); await page.evaluate('setGameActive(true)')
+    await page.goto(URL); await page.wait_for_timeout(800); await page.evaluate('setGameActive(true);window.autoProcedures=true')
     await page.click(f'[data-case="{case}"]'); await page.wait_for_timeout(300)
     await page.evaluate(f"document.getElementById('mode').value='{mode}'")
-    await page.fill('#player-name','QA'); await page.click('#start-case'); await page.wait_for_timeout(500)
+    await page.fill('#player-name','QA'); await page.click('#start-case'); await page.wait_for_timeout(300); await page.evaluate('skipCutscene()'); await page.wait_for_timeout(700)
 async def ff(page,sec):
     await page.evaluate(f"(()=>{{for(let i=0;i<{int(sec*10)};i++)sim.tick(.1);update();}})()")
 async def act(page,a): await page.evaluate(f"orderAction('{a}')")

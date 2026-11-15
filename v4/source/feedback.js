@@ -9,7 +9,7 @@ const FB_DOMAINS={
  post:{label:'After ROSC',tip:'After ROSC: airway and SpO₂ 90–98%, MAP ≥65 mmHg, 12-lead ECG, treat the cause, temperature control, and a structured handover.',drill:'run the post-ROSC checklist before you hand over'}
 };
 const FB_KEY_DOMAIN=[
- [/^(long-pause|cpr-|vent-first|airway-first|etco2-)/,'cpr'],
+ [/^(long-pause|cpr-|vent-first|airway-first|etco2-|tube-check)/,'cpr'],
  [/^(unsafe-|stacked-shocks|shock-pulse|nonshockable|fresh-rhythm|energy|sync-arrest|not-charged|no-pads|cv-|check-artifact|rhythm-no-monitor|pacer-|not-stable)/,'rhythm'],
  [/^(pacing-pain|no-sedation|comfort|sedate-arrest)/,'team'],
  [/^(cause-|no-ptx|routine-bicarb|ecg12-arrest)/,'cause'],

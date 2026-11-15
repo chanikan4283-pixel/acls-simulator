@@ -382,3 +382,16 @@ Built on top of Codex's 2 Nov animation update (synced from the device first).
 - **Name tags**: floating role labels removed (Roles button hidden); each clinician wears a name tag on the scrub top (COMPRESSOR, AIRWAY, VENTILATION, MEDS · DEFIB).
 - **Home lock**: the practice room shows "Game not in use" until the passcode is entered (stored per device in localStorage); "🔒 Game not in use · lock" re-locks. Passcode constant `LOCK_CODE` in app.js. This is a classroom gate, not security — the code is readable in the page source.
 - Tests: 114 pass.
+
+## Pass 15 (2026-11-15) — clearer flow, click-to-work, pressure, cutscene
+- **Defib panel rebuilt as numbered steps**: 1 Pads → 2 shock type (two plain-language cards: "Defibrillation — NO pulse" / "Synchronized cardioversion — pulse PRESENT") → 3 energy chips (defaults 200 J / 100 J) → 4 CHARGE · CLEAR · SHOCK. The SYNC/UNSYNC toggle is gone. Pacing and "More" (flat-line check, sedation) are collapsible; pacing opens by itself for a slow rhythm with a pulse.
+- **CPR & Airway / Assess panels regrouped** with section headings and ✓ states that refresh after each order. Rate/depth inputs moved under "Compression targets (advanced)".
+- **CPR tap game is now discoverable and meaningful**: HUD button "🎯 Coach CPR quality · tap game" while CPR runs (turns amber when quality drops); a good set of 30 (≥80 % on the beat) restores rate/depth, also during continuous compressions. Copy no longer says it does not affect the case.
+- **Intubation**: no procedure animation (3 s, camera glance only). The player must **check the tube position** (interactive stethoscope: tap epigastrium + both lungs) and **attach ETCO₂**; both have HUD buttons, a reminder at 25 s and scored omissions at 75 s (`tube-check-missing`, `etco2-missing`).
+- **Click-to-work**: pads are placed by tapping the two correct sites on a chest diagram (wrong sites explain why); chest/tube check is tap-driven; patch hunt and CPR tap game as before. `window.autoProcedures=true` bypasses these for scripted QA.
+- **Camera**: brief automatic zoom on the action being performed (pads, charge, shock, airway, IV/IO, history, CPR start, switch), then back to the player's chosen view.
+- **Idle nudges**: after ~20 s without an order (8 s if nobody is compressing) one small generic question appears ("Does the team have IV / IO access?", "Think Hs & Ts…"); tapping it opens the right panel. Never names the diagnosis.
+- **Pressure**: last 10 s before a rhythm check — red vignette, ticking, "Ten seconds to rhythm check"; one-minute timekeeper call; family member speaks at 0:40, 2:50 and 5:30 of arrest; vignette also when compressions are stopped > 6 s.
+- **Cutscene**: short letterboxed brief (camera moves + two lines from the case brief + "You are the team leader.") before the clock starts; Skip button; `skipCutscene()` for QA.
+- **Other**: generic drug-push animation no longer raises the limb (adenosine only); case 5 exam no longer points to the skin/back; naloxone infusion alone now treats recurrent respiratory depression in case 5.
+- Tests: 114 pass; personas (qa-tools/personas.mjs) and scripted cases 1–4 at 100.

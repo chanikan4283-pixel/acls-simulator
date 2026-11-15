@@ -45,7 +45,7 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
  <div class="cpr-stats"><span>Cycles <b id="cpr-cycles">0</b></span><span>On rhythm <b id="cpr-acc">—</b></span><span>Best streak <b id="cpr-best">0</b></span></div>
  <label class="cpr-metro"><input type="checkbox" id="cpr-metronome" checked> Metronome click</label></div>
  <details class="cpr-team"><summary>Team CPR settings (rate &amp; depth)</summary><label>Rate <output id="rate-read"></output><input id="practice-rate" type="range" min="60" max="160" step="1" value="${s.cprRate}"></label><label>Depth <output id="depth-read"></output><input id="practice-depth" type="range" min="2" max="8" step="0.1" value="${s.cprDepth}"></label><button id="cpr-ideal" class="wide">Set ideal: 110/min · 5.5 cm</button><p id="practice-feedback" role="status"></p><p id="practice-etco2"></p></details>
- <small>Practice only — unscored, and it does not change the case.</small>`;
+ <small>A good set of 30 (80 % on the beat) brings your team's rate and depth back on target.</small>`;
  const $q=q=>host.querySelector(q);const taps=[];let count=0,cycles=0,good=0,total=0,streak=0,breathUntil=0,lastBeat=0,cycleGood=0;
  const continuous=()=>s.intubated;
  const avgRate=()=>{if(taps.length<3)return null;const iv=[];for(let i=Math.max(1,taps.length-4);i<taps.length;i++)iv.push(taps[i]-taps[i-1]);return 60000/(iv.reduce((a,b)=>a+b,0)/iv.length);};
@@ -55,7 +55,7 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
   count++;const r=avgRate();let msg;
   if(r===null)msg='Keep going…';else{total++;const ok=r>=100&&r<=120;if(ok){good++;cycleGood++;streak++;best=Math.max(best,streak);}else streak=0;msg=ok?(streak>=10?'Perfect rhythm! 🔥':'Good — keep this pace'):r<100?'Faster ↑':'Slower ↓';onBeat(ok);}
   $q('#tap-feedback').textContent=msg;
-  if(!continuous()&&count>=30){cycles++;const pct=Math.round(cycleGood/28*100);breathUntil=now+4000;$q('#tap-feedback').textContent=`Cycle ${cycles} done — ${Math.min(100,pct)}% on rhythm${pct>=80?' ★':''}. Two breaths now…`;sim.log('cpr-practice-cycle',`CPR game: cycle ${cycles}, ${Math.min(100,pct)}% on rhythm (unscored)`);if(pct>=80&&s.cpr&&!s.pulse)sim.action('cpr-coached');count=0;cycleGood=0;taps.length=0;}
+  if(count>=30){cycles++;const pct=Math.round(cycleGood/28*100);if(!continuous())breathUntil=now+4000;$q('#tap-feedback').textContent=`Cycle ${cycles} done — ${Math.min(100,pct)}% on rhythm${pct>=80?' ★ team back on target':''}.${continuous()?'':' Two breaths now…'}`;sim.log('cpr-practice-cycle',`CPR game: cycle ${cycles}, ${Math.min(100,pct)}% on rhythm (unscored)`);if(pct>=80&&s.cpr&&!s.pulse)sim.action('cpr-coached');count=0;cycleGood=0;taps.length=0;}
  };
  $q('#compression-tap').onpointerdown=e=>{e.preventDefault();tap();};
  const key=e=>{if(!host.isConnected){document.removeEventListener('keydown',key);return;}if(e.code==='Space'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();tap();}};document.addEventListener('keydown',key);
