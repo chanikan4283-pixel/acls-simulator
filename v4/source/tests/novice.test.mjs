@@ -30,7 +30,7 @@ test('case 2 novice: shocks PEA, gives atropine, bicarbonate, dextrose before DT
  x.action('cpr');x.action('fluid-bolus',{ml:1000});adv(x,10);check(x);assert.equal(x.s.rosc,true);assert.equal(finishPost(x),true);
 });
 test('case 2 novice who delays epinephrine sees asystole but the same treatment still works',()=>{
- const x=new Simulation(2);x.action('pulse');x.action('cpr');x.action('monitor');adv(x,155);assert.equal(x.s.rhythm,'ASYSTOLE');x.action('iv');x.action('flatline');x.med('epinephrine',1,'mg');x.action('labs',{tests:['dtx']});adv(x,15);x.med('dextrose',50,'mL');x.action('fluid-bolus',{ml:500});adv(x,10);check(x);assert.equal(x.s.rosc,true);
+ const x=new Simulation(2);x.action('pulse');x.action('cpr');x.action('monitor');adv(x,125);x.action('cpr');x.action('rhythm-check');assert.equal(x.s.rhythm,'PEA');x.action('cpr');adv(x,125);x.action('cpr');x.action('rhythm-check');assert.equal(x.s.rhythm,'ASYSTOLE');x.action('cpr');x.action('iv');x.action('flatline');x.med('epinephrine',1,'mg');x.action('labs',{tests:['dtx']});adv(x,15);x.med('dextrose',50,'mL');x.action('fluid-bolus',{ml:500});adv(x,10);check(x);assert.equal(x.s.rosc,true);
 });
 test('case 3 novice: CPR on a conscious patient, adenosine 12 first, IO adenosine, unsync shock — feedback; stable cardioversion after adenosine works',()=>{
  const x=new Simulation(3);x.action('cpr');assert.ok(keys(x).includes('cpr-pulse'));x.action('pulse');x.action('monitor');x.action('insert-io');adv(x,10);

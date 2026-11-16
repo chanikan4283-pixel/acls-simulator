@@ -497,3 +497,47 @@ clinically wrong. A septic, hypoglycaemic 68-year-old arrests in **PEA**, not as
 - Tests updated: case 2 opens in PEA and scores the rhythm call; a separate case runs 160 s without
   epinephrine, checks the rhythm has gone flat, and checks that the three protocol steps award the
   objective only when all three are done. 115 pass.
+
+### Pass 17c — rhythm changes only at a check, male voice, room sound (16 Nov 2026)
+
+Praew: *"there's should not change the rhythm between cycle make it asystole at 2nd cycle please
+review again make it logical make the voice over male version, less AI, more sound effect"*
+
+**1. The rhythm never changes mid-cycle.** `s.cycleNo` counts completed cycles, incremented at each
+rhythm check during arrest. Case 2's PEA → asystole now happens **inside the rhythm-check handler**,
+at the check that closes the second cycle (`cycleNo >= 2`, arrest ≥ 200 s, no epinephrine yet), so
+the player always discovers it by looking, never by watching it change under the compressions. The
+old `t >= 150` tick rule is gone. The arrest-time gate also stops a player from pulling the flat
+line forward by spamming early rhythm checks (four checks in the first 80 s leave it in PEA; it goes
+flat at the next real check at 3½ minutes).
+Verified end to end: check 1 → PEA, check 2 → flat line with the protocol prompt, and both the early
+epinephrine path and the late path still reach ROSC and 100 points.
+
+**2. Male voice, and less synthetic.** The team voice is now chosen from a male list, with neural
+voices first because they are the ones that do not sound like a machine: *Guy / Ryan / Brian
+(Natural)* on Windows, *Daniel / Alex / Aaron* on Apple and iPad, *Google UK English Male* on
+Chrome, then any male English voice. The patient and the family get a **different** voice (female
+list) so the room is not one person talking to himself. Delivery: rate 1.02 (1.10 for urgent
+call-outs such as *clear* / *shock*), pitch 0.92, and a small per-line variation so the cadence is
+not identical every time.
+The wording is spoken aloud as a person would say it, which is most of the robot gone: role prefixes
+are dropped, and `1 mg IV/IO`, `ETCO₂`, `SpO₂`, `PEA`, `200 J` become *one milligram I V or I O*,
+*end tidal CO2*, *sats*, *P E A*, *two hundred joules*, with contractions (*don't stop
+compressions*). Singular and plural are handled (1 milligram, 300 milligrams).
+
+**3. More sound.** A new `roomSound()` runs every frame, all of it deliberately quiet:
+- the monitor **beeps on every QRS**, at the real rate, dropping in pitch when sats are low — so you
+  *hear* electrical activity in PEA and hear it vanish when the rhythm goes flat (no beep in VF);
+- a soft **thump on every compression**, at the team's actual rate;
+- a **flat-line reminder tone** every 5 s in asystole;
+- a **ventilation hiss every 6 seconds** once the tube is in — the audible version of the 10/min rule;
+- **pacer clicks** at the set rate, with a capture beep when the pacer captures;
+- **countdown ticks** in the last 5 s before the 2-minute rhythm check.
+Event sounds added for CLEAR, the flat-line protocol and each of its steps, rhythm and pulse checks,
+and the CPR coaching bonus; warning events now get their own soft two-note chirp instead of silence.
+
+### Verified
+`npm test` 115 pass · scripted runs of cases 1–5 all score 100 with no errors · the eleven persona
+runs are unchanged except case 2 expert, now 100 because the correct PEA call scores the rhythm
+objective. Voice selection checked against simulated macOS, iPad, Windows, Chrome and
+single-voice device lists. Not checked: a real iPad, and audio itself.
