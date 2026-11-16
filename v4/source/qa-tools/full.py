@@ -27,7 +27,7 @@ async def case1(pg):
 async def case2(pg):
     await start(pg,2); await act(pg,'pulse'); await act(pg,'cpr'); await act(pg,'monitor'); await act(pg,'insert-io'); await act(pg,'labs'); await act(pg,'history'); await act(pg,'exam')
     await ff(pg,16); await med(pg,'epinephrine',1,'mg','IO'); await act(pg,'bvm')
-    await pg.evaluate("openPanel('meds')"); await pg.evaluate("document.querySelector('[data-bolus=\"500\"]').click()"); await act(pg,'flatline')
+    await pg.evaluate("openPanel('meds')"); await pg.evaluate("document.querySelector('[data-bolus=\"500\"]').click()"); await pg.evaluate("sim.action('flatline-step',{step:'cable'});sim.action('flatline-step',{step:'gain'});sim.action('flatline-step',{step:'lead'})")
     await ff(pg,80); await med(pg,'dextrose',50,'mL','IO')
 
     await ff(pg,10); await reveal(pg); await handover(pg)

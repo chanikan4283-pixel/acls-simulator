@@ -406,3 +406,71 @@ Built on top of Codex's 2 Nov animation update (synced from the device first).
 - **CPR tap game**: score (10/15 per good/perfect tap × combo up to ×5), combo meter, set bonus +200, pop-ups, personal best (localStorage `acls-cpr-best`).
 - **Sound**: richer success/error/ROSC/alarm, case-start sting, heartbeat in the last 10 s, panel whoosh, combo jingle.
 - Tests: 115 pass; scripted cases 1–4 at 100, personas for 5.
+
+## Pass 17 — 16 Nov 2026 (Claude)
+
+Praew: *"add detail on flat line protocol, when intubate the team say ventilate every 6 second, and
+cpr minigame when player reach target make the etco2 improve and 5h5t not sync to the action, and
+there's time space there's nothing to do, make some minigame such as flatline protocol game like in
+the real defibillation, in hx if there's no use of opiod there's no need to mention about patch or
+opiod, the post ROSC game make a short simple minigame easy (if wrong go on with the debrief)"*
+
+### 1. Flat-line protocol is now a game (`app.js` `flatlineGame()`, `clinical.js` `flatline-step`)
+A defibrillator front panel over the room, running in **real time** — compressions carry on while
+the player works, which is the whole point of the protocol.
+1. **Patient cable & electrodes** — one of RA / LA / LL is flashing (picked at random each run);
+   tap the flashing one to re-seat it. Tapping a good one says so and costs nothing.
+2. **Gain** — ×1 → ×2 (20 mm/mV). The strip really is redrawn at the new gain (`Trace.gain`).
+3. **Second lead** — II → I or III. `Trace.lead` now drives the on-screen lead label.
+Then a verdict card, which depends on the rhythm actually on the monitor: *true asystole · do not
+shock*, *not a flat line · shockable*, or *complexes present · this is PEA*. The card's buttons go
+straight to Resume CPR, epinephrine, the defibrillator or the Hs & Ts board.
+- Engine: `s.flatlineSteps{cable,gain,lead}`, action `flatline-step`, and `finishFlatline()` which
+  awards the 5-point `flatline` objective once all three are done. `sim.action('flatline')` still
+  completes all three in one call, so older scripts and tests are unaffected.
+- Entry points: the asystole protocol card (now with the full AHA wording), the defibrillator
+  panel's *More* drawer, a new amber quick-action button (`#flatline-qa`, shown for a flat or
+  organised non-shockable rhythm that has not been checked), and an idle hint.
+
+### 2. Ventilation after the tube
+When the tube goes in the team now says, in the caption and in a speech bubble: *one breath every
+6 seconds — 10 a minute — and nobody stops compressions*. The compression cue in the HUD reads
+**CPR ACTIVE · 1 BREATH / 6 s** while intubated, the award text carries the same instruction, and a
+later bubble repeats it at 70 s.
+
+### 3. The CPR game drives ETCO₂
+`cpr-coached` (a set of 30 with ≥80 % on the beat) now always resets the team to 110/min and 5.5 cm
+**and** sets `s.cprBoostUntil = t + 90 s`. While that boost runs, good compressions give an ETCO₂ of
+~20 mmHg instead of ~14. The game shows ETCO₂ as a fourth score chip with a ↑ while boosted, the set
+bonus pops as **SET BONUS +200 ★ ETCO₂ ↑**, and a new bubble asks for coaching when ETCO₂ sits
+below 10 after 2½ minutes.
+
+### 4. Hs & Ts board synced to the player's actions
+`autoReview` was rewritten: it now computes **one deterministic verdict per row per tick** (later
+rules win), so rows can no longer flap or spam the log. Coverage added: PaO₂/PaCO₂ → hypoxia,
+lactate alongside pH, missed dialysis in case 1 → potassium, treatment given (hyperkalaemia,
+dextrose, naloxone, patch removal, decompression) → evidence supports, troponin, POCUS cardiac →
+tamponade *and* pulmonary thrombosis, and history + examination → toxins.
+Each row now shows **the reason underneath it** (`↳ DTX 26 mg/dL`), the board opens with an
+**Evidence so far:** line at the top, it refreshes itself when opened, and it scrolls on short
+screens. Changing a row by hand still overrides everything.
+
+### 5. Case 2 history
+*"…with no opioid use"* is gone — the history no longer raises opioids in a case that has nothing to
+do with them. It now reads: *She continued her usual insulin despite eating almost nothing. She has
+had high fever, thirst and increasing fatigue.*
+
+### 6. Post-ROSC bundle is a quick tap quiz
+The number fields are gone. The handover panel is now **Step 1 · is she still with you** (pulse,
+reassess, verbal commands) and **Step 2 · post-arrest bundle, one tap each**: SpO₂ 88/94/100,
+MAP 45/55/65, PaCO₂ 28/40/55, and — once the commands check shows she is unresponsive —
+temperature 30/36/38.5 °C and 12/24/36 h. Everything else moved into a *More ongoing care* drawer.
+A wrong tap (or no tap) still hands over and opens the debrief, where the existing table marks each
+target ✓ / ✗ against AHA 2025.
+
+### Verified
+`npm test` 115 pass. Scripted run (`qa/ui17.py`): the flat-line game completes and awards, the board
+shows five synced reasons with the evidence summary, the HUD cue switches to 1 breath / 6 s, the
+game's ETCO₂ chip reads 21 ↑ after coaching, and the post quiz writes all five targets and completes
+the case with no wrong targets. No page errors.
+Not checked: a real iPad, and audio.

@@ -39,14 +39,14 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
  // Tap-along CPR drill: a metronome guides the rhythm, the rate is a rolling average of the last
  // four taps (single taps never fail you), and 30:2 cycles pause automatically for two breaths.
  host.innerHTML=`<p class="cpr-lead">Tap the big button (or press <kbd>Space</kbd>) in time with the pulsing ring. Aim for the green zone: <b>100–120 per minute</b>.</p>
- <div class="cpr-score"><span>SCORE<b id="cpr-score">0</b></span><span>COMBO<b id="cpr-combo">×1</b></span><span>BEST<b id="cpr-high">0</b></span></div>
+ <div class="cpr-score"><span>SCORE<b id="cpr-score">0</b></span><span>COMBO<b id="cpr-combo">×1</b></span><span>BEST<b id="cpr-high">0</b></span><span>ETCO₂<b id="cpr-co2">—</b></span></div>
  <div class="cpr-game"><i id="cpr-pop" aria-hidden="true"></i><button id="compression-tap" class="cpr-pad" aria-label="Compress"><span class="cpr-ring" id="cpr-ring"></span><b>PUSH</b><small id="cpr-count">0 / 30</small></button>
  <div class="cpr-gauge" aria-hidden="true"><div class="cpr-zone"></div><i id="cpr-needle"></i><span>60</span><span>100</span><span>120</span><span>160</span></div>
  <p id="cpr-rate" class="cpr-rate">— /min</p><p id="tap-feedback" class="cpr-feedback" role="status">Start tapping with the ring.</p>
  <div class="cpr-stats"><span>Cycles <b id="cpr-cycles">0</b></span><span>On rhythm <b id="cpr-acc">—</b></span><span>Best streak <b id="cpr-best">0</b></span></div>
  <label class="cpr-metro"><input type="checkbox" id="cpr-metronome" checked> Metronome click</label></div>
  <details class="cpr-team"><summary>Team CPR settings (rate &amp; depth)</summary><label>Rate <output id="rate-read"></output><input id="practice-rate" type="range" min="60" max="160" step="1" value="${s.cprRate}"></label><label>Depth <output id="depth-read"></output><input id="practice-depth" type="range" min="2" max="8" step="0.1" value="${s.cprDepth}"></label><button id="cpr-ideal" class="wide">Set ideal: 110/min · 5.5 cm</button><p id="practice-feedback" role="status"></p><p id="practice-etco2"></p></details>
- <small>A good set of 30 (80 % on the beat) brings your team's rate and depth back on target.</small>`;
+ <small>A good set of 30 (80 % on the beat) puts your team back on target — 110/min, 5.5 cm — and the simulated ETCO₂ climbs toward 20 mmHg.</small>`;
  const $q=q=>host.querySelector(q);const taps=[];let count=0,cycles=0,good=0,total=0,streak=0,breathUntil=0,lastBeat=0,cycleGood=0,score=0,high=0;try{high=+localStorage.getItem('acls-cpr-best')||0;}catch{}
  const pop=(text,cls)=>{const e=$q('#cpr-pop');e.textContent=text;e.className='';void e.offsetWidth;e.className='show '+cls;};const showScore=()=>{const mult=Math.min(5,1+Math.floor(streak/10));$q('#cpr-score').textContent=score;$q('#cpr-combo').textContent='×'+mult;$q('#cpr-combo').className=mult>1?'hot':'';if(score>high){high=score;try{localStorage.setItem('acls-cpr-best',high);}catch{}}$q('#cpr-high').textContent=high;};showScore();
  const continuous=()=>s.intubated;
@@ -57,7 +57,7 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
   count++;const r=avgRate();let msg;
   if(r===null)msg='Keep going…';else{total++;const ok=r>=100&&r<=120;if(ok){good++;cycleGood++;streak++;best=Math.max(best,streak);const mult=Math.min(5,1+Math.floor(streak/10)),perfect=r>=105&&r<=115;score+=(perfect?15:10)*mult;pop(perfect?`PERFECT +${15*mult}`:`GOOD +${10*mult}`,perfect?'perfect':'good');if(streak%10===0)onBeat('combo');}else{if(streak>=5)pop('COMBO LOST','miss');else pop(r<100?'TOO SLOW':'TOO FAST','miss');streak=0;}msg=ok?(streak>=10?`On fire — ×${Math.min(5,1+Math.floor(streak/10))} combo 🔥`:'Good — keep this pace'):r<100?'Faster ↑':'Slower ↓';onBeat(ok);showScore();}
   $q('#tap-feedback').textContent=msg;
-  if(count>=30){cycles++;const pct=Math.round(cycleGood/28*100);if(pct>=80){score+=200;pop('SET BONUS +200 ★','perfect');}showScore();if(!continuous())breathUntil=now+4000;$q('#tap-feedback').textContent=`Cycle ${cycles} done — ${Math.min(100,pct)}% on rhythm${pct>=80?' ★ team back on target':''}.${continuous()?'':' Two breaths now…'}`;sim.log('cpr-practice-cycle',`CPR game: cycle ${cycles}, ${Math.min(100,pct)}% on rhythm (unscored)`);if(pct>=80&&s.cpr&&!s.pulse)sim.action('cpr-coached');count=0;cycleGood=0;taps.length=0;}
+  if(count>=30){cycles++;const pct=Math.round(cycleGood/28*100);if(pct>=80){score+=200;pop(s.cpr&&!s.pulse?'SET BONUS +200 ★ ETCO₂ ↑':'SET BONUS +200 ★','perfect');}showScore();if(!continuous())breathUntil=now+4000;$q('#tap-feedback').textContent=`Cycle ${cycles} done — ${Math.min(100,pct)}% on rhythm${pct>=80?' ★ team back on target':''}.${continuous()?'':' Two breaths now…'}`;sim.log('cpr-practice-cycle',`CPR game: cycle ${cycles}, ${Math.min(100,pct)}% on rhythm (unscored)`);if(pct>=80&&s.cpr&&!s.pulse)sim.action('cpr-coached');count=0;cycleGood=0;taps.length=0;}
  };
  $q('#compression-tap').onpointerdown=e=>{e.preventDefault();tap();};
  const key=e=>{if(!host.isConnected){document.removeEventListener('keydown',key);return;}if(e.code==='Space'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();tap();}};document.addEventListener('keydown',key);
@@ -76,7 +76,9 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
   if(!breathing&&breathUntil&&now>=breathUntil){breathUntil=0;$q('#tap-feedback').textContent='Back on the chest — keep the rhythm.';}
   $q('#rate-read').textContent=`${s.cprRate}/min`;$q('#depth-read').textContent=`${s.cprDepth.toFixed(1)} cm`;
   $q('#practice-feedback').textContent=cprInRange(s.cprRate,s.cprDepth)?'Team settings in the target range ✓':'Team settings outside 100–120/min and 5–6 cm';
-  $q('#practice-etco2').textContent=s.capno?`Simulated ETCO₂: ${Math.round(s.etco2)} mmHg`:'';};
+  const boosted=s.t<(s.cprBoostUntil??-Infinity);
+  const co2=$q('#cpr-co2');co2.textContent=s.capno?Math.round(s.etco2)+(boosted?' ↑':''):'—';co2.className=s.capno?(s.etco2>=10?'hot':'cold'):'';co2.title=s.capno?'Waveform capnography · a good set of 30 pushes it up toward 20 mmHg':'Attach waveform ETCO₂ to watch your compressions work';
+  $q('#practice-etco2').textContent=s.capno?`Simulated ETCO₂: ${Math.round(s.etco2)} mmHg${boosted?' — rising with your coaching':''}`:'Attach waveform ETCO₂ (after the tube) to see your compressions work.';};
  }
  mountPocus(host,sim);
  return host.__pocusUpdate;

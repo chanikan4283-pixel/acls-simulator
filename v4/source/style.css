@@ -466,3 +466,64 @@ body.cutscene #monitor{display:none!important}
 #drawer .order-sheet .chip:not(.active){background:rgba(255,255,255,.10)!important;color:#eef6f5!important}
 #bubble{z-index:9}
 body.lg #play-layout #drawer .order-sheet .chip.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important;font-weight:700}
+
+/* ── pass 17 · flat-line protocol game ─────────────────────────────────────── */
+#fl-game{position:absolute;left:16px;top:88px;z-index:11;width:min(600px,calc(100% - 300px));max-height:calc(100% - 110px);overflow:auto;background:rgba(8,24,30,.96);border:2px solid #7cedd2;border-radius:18px;padding:14px;box-shadow:0 18px 50px #000b;backdrop-filter:blur(10px);animation:flIn .22s ease}
+@keyframes flIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.fl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.fl-head b{font-size:17px;letter-spacing:.06em;display:block}
+.fl-head small{display:block;font-size:13.5px;opacity:.8;margin-top:2px;max-width:46ch}
+.fl-close{width:auto!important;padding:4px 10px!important;flex:0 0 auto}
+.fl-screen{position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(124,237,210,.25);background:#101e23}
+.fl-screen canvas{display:block;width:100%;height:120px}
+#fl-flag{position:absolute;right:10px;top:10px;font-style:normal;font-size:12px;font-weight:800;letter-spacing:.12em;color:#2a0b08;background:#ffb24d;padding:3px 8px;border-radius:6px;animation:blink 1s steps(2) infinite}
+.fl-steps{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fl-steps li{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid transparent;opacity:.55;transition:opacity .2s,border-color .2s,background .2s}
+.fl-steps li.active{opacity:1;background:rgba(124,237,210,.09);border-color:rgba(124,237,210,.5)}
+.fl-steps li.done{opacity:1;background:rgba(48,209,168,.1);border-color:rgba(48,209,168,.35)}
+.fl-num{flex:0 0 26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;font-weight:800;font-size:14px}
+.fl-steps li.done .fl-num{background:#30d1a8;color:#03241c}
+.fl-steps li.done .fl-num::after{content:'✓'}
+.fl-steps li.done .fl-num{font-size:0}
+.fl-steps li.done .fl-num::after{font-size:15px}
+.fl-steps b{font-size:15.5px;display:block}
+.fl-steps small{display:block;font-size:13.5px;opacity:.85;margin:2px 0 6px;line-height:1.35}
+.fl-row{display:flex;flex-wrap:wrap;gap:6px}
+.fl-row button{width:auto!important;padding:8px 12px!important;font-size:14.5px!important;min-height:40px;border-radius:10px}
+.fl-row button.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important}
+.fl-row button.loose{background:#ffb24d!important;color:#2a0b08!important;animation:blink .85s steps(2) infinite}
+#fl-verdict{margin-top:12px;padding:12px;border-radius:12px;border:1px solid}
+#fl-verdict b{display:block;font-size:17px;letter-spacing:.04em;margin-bottom:4px}
+#fl-verdict small{display:block;font-size:14px;line-height:1.4;opacity:.92;margin-bottom:8px}
+#fl-verdict.ok{background:rgba(48,209,168,.14);border-color:#30d1a8}
+#fl-verdict.ok b{color:#7cedd2}
+#fl-verdict.warn{background:rgba(255,123,107,.14);border-color:#ff7b6b}
+#fl-verdict.warn b{color:#ffb6ab}
+@media(max-width:860px){#fl-game{width:calc(100% - 32px);top:8px}}
+body.lg #fl-game{background:rgba(8,24,30,.88)}
+/* pass 17 · ETCO₂ chip in the CPR game */
+.cpr-score #cpr-co2.hot{color:#7cedd2}
+.cpr-score #cpr-co2.cold{color:#ffb24d}
+/* pass 17 · Hs & Ts board shows why each row changed */
+.ht-legend{font-size:13px;opacity:.78;line-height:1.4;margin:0 2px 10px}
+.ht-cols .ht-why{display:block;font-style:normal;font-size:12.5px;line-height:1.35;color:#7cedd2;opacity:.85;margin:1px 0 2px}
+.ht-cols label{gap:2px}
+/* pass 17 · post-ROSC bundle quiz */
+.pq-lead{font-size:13.5px;opacity:.82;line-height:1.4;margin:2px 2px 8px}
+.post-quiz{display:flex;flex-direction:column;gap:8px}
+.pq-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
+.pq-row>span{flex:1 1 150px;font-size:15px;font-weight:600}
+.pq-row>span small{display:block;font-size:12.5px;font-weight:500;opacity:.7;letter-spacing:.06em}
+.pq-chips{display:flex;gap:6px;flex-wrap:wrap}
+.pq-chips .chip{width:auto!important;min-width:62px;padding:9px 12px!important;font-size:15px!important;min-height:42px;border-radius:10px;text-align:center}
+#drawer .pq-chips .chip.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important;font-weight:700}
+.pq-note{font-size:13px;opacity:.75;margin:6px 2px 0}
+body.lg #play-layout #drawer .pq-chips .chip.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important;font-weight:700}
+/* pass 17 · Hs & Ts board scrolls, and leads with the evidence found so far */
+#ht-window{max-height:calc(100% - 120px);overflow:auto}
+.ht-evidence{font-size:14px;margin:0 2px 6px;line-height:1.4;opacity:.8}
+.ht-evidence.hit{color:#ffd9a0;opacity:1}
+.ht-evidence b{letter-spacing:.04em}
+.fl-screen canvas{height:96px}
+/* pass 17 · flat-line quick action */
+#quick-actions .qa-flat{background:rgba(255,178,77,.16);border-color:rgba(255,178,77,.55);color:#ffd9a0}
