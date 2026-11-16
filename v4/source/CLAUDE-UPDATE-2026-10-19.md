@@ -395,3 +395,14 @@ Built on top of Codex's 2 Nov animation update (synced from the device first).
 - **Cutscene**: short letterboxed brief (camera moves + two lines from the case brief + "You are the team leader.") before the clock starts; Skip button; `skipCutscene()` for QA.
 - **Other**: generic drug-push animation no longer raises the limb (adenosine only); case 5 exam no longer points to the skin/back; naloxone infusion alone now treats recurrent respiratory depression in case 5.
 - Tests: 114 pass; personas (qa-tools/personas.mjs) and scripted cases 1–4 at 100.
+
+## Pass 16 (2026-11-16) — simpler panels, typed doses, asystole case, score game
+- **Med cart**: "Given so far" strip (time · drug · dose · route, incl. fluids) at the top; three steps (Access → Drug → Fluid bolus chips). The order sheet is a sticky bottom card and the **dose is typed by the player** (number field + fixed unit); no preset dose chips. Enter gives. `medLog` in app.js.
+- **Investigate**: "Findings so far" (history, exam, temperature, 12-lead, ultrasound, skin) and lab results at the top; lab tests are tap-to-select chips; consults folded under "Consult · definitive care".
+- **Removed**: stethoscope tube/chest check (buttons, HUD, penalty) and the pad-placement mini-step; pads now appear at once. After intubation only **ETCO₂** is required (reminder 20 s, `etco2-missing` at 60 s).
+- **Case 2 is now asystole from the start** ("Look beyond the flat line"); the flat-line protocol (`flatline`, 5 pts, taken from CPR 20→15) is part of the rubric. Tests updated.
+- **POCUS → Hs & Ts**: after interpreting a clip a button opens the Hs & Ts board with tension pneumothorax / tamponade row highlighted (auto-marked as before).
+- **Funny team bubbles** (speech bubble pinned to the 3D clinician) when nobody is ventilating (0:35, 1:15, 2:05 of arrest), slow breathing without bag-mask, long bag-mask without a tube, tube without capnography. Tap opens CPR & Airway.
+- **CPR tap game**: score (10/15 per good/perfect tap × combo up to ×5), combo meter, set bonus +200, pop-ups, personal best (localStorage `acls-cpr-best`).
+- **Sound**: richer success/error/ROSC/alarm, case-start sting, heartbeat in the last 10 s, panel whoosh, combo jingle.
+- Tests: 115 pass; scripted cases 1–4 at 100, personas for 5.

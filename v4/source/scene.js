@@ -172,6 +172,7 @@ export class Ward {
  }
  procedure(name,active){if(!active){delete this.procedureStarts[name];return 0;}if(this.procedureStarts[name]===undefined)this.procedureStarts[name]=this.time;return procedureBlend(this.time-this.procedureStarts[name]);}
  smoothPerson(person,dt){for(const vector of [person.root.position,person.torso.position,person.torso.rotation,...(person.hip?[person.hip.rotation]:[]),person.head.rotation,...person.arms.flatMap(a=>[a.shoulder.rotation,a.elbow.rotation])]){let old=this.poseCache.get(vector);if(!old){old={x:vector.x,y:vector.y,z:vector.z};this.poseCache.set(vector,old);}for(const axis of ['x','y','z']){old[axis]=smoothValue(old[axis],vector[axis],dt);vector[axis]=old[axis];}}}
+ screenPoint(person,up=.3){if(!person?.head)return null;const v=new T.Vector3();person.head.getWorldPosition(v);v.y+=up;v.project(this.camera);const r=this.canvas.getBoundingClientRect();return {x:(v.x*.5+.5)*r.width,y:(-v.y*.5+.5)*r.height,visible:v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05};}
  cameraPreset(name){this.presetName=name;const presets={overview:[[3.7,3.45,4.6],[-.05,1.3,-.2]],patient:[[1.05,2.95,1.95],[0,1.32,-.3]],cpr:[[-1.5,2.25,3.0],[-.28,1.62,-.07]],airway:[[-1.9,3.1,-2.0],[0,1.3,-.7]],defib:[[3.0,2.55,2.7],[.95,1.5,.35]],monitor:[[2.2,3,2.8],[0,1.3,0]],chest:[[.75,2.75,1.15],[0,1.42,-.14]],iv:[[1.55,2.25,1.25],[.3,1.36,.1]],meds:[[2.6,2.5,2.2],[1.0,1.5,.4]],family:[[1.2,2.6,3.6],[1.6,1.5,1.6]],intro:[[5.2,3.2,5.9],[0,1,-.35]]};const p=presets[name]||presets.overview;this.desired.set(...p[0]);this.target.set(...p[1]);if(this.reduced){this.camera.position.copy(this.desired);this.look.copy(this.target);}}
  setQuality(q){this.quality=q;this.renderer.setPixelRatio(q==='high'?Math.min(devicePixelRatio,2):q==='low'?1:Math.min(devicePixelRatio,1.5));this.renderer.shadowMap.enabled=q!=='low';this.resize();}
  resize(){const r=this.canvas.parentElement.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix();}
@@ -253,9 +254,9 @@ export class Ward {
   }
   for(const a of this.airway.arms){a.shoulder.rotation.x=ventilating?-1.0:-.08;a.elbow.rotation.x=ventilating?-.9:-.1;}
   for(const person of [this.airway,this.nurse,this.family]){person.head.rotation.y=Math.sin(idleT*.4)*.035;person.torso.position.y=.99+Math.sin(idleT*1.1)*.003;}
-  const padProgress=this.procedure('pads',s.pads),ivProgress=this.procedure('iv',s.iv),airwayProgress=this.procedure('airway',s.intubated);
+  const padProgress=s.pads?1:0,ivProgress=this.procedure('iv',s.iv),airwayProgress=this.procedure('airway',s.intubated);
   // Pads: gel on both sites first, then each pad is rolled on from one edge and pressed down in turn.
-  const padE=s.pads?this.time-(this.procedureStarts.pads??this.time):99,sm=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);},pk1=sm((padE-.9)/.55),pk2=sm((padE-1.5)/.55);
+  const padE=99,/* pads appear at once: no placement animation */sm=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);},pk1=sm((padE-.9)/.55),pk2=sm((padE-1.5)/.55);
   this.padSeq=padE<2.3?padE:null;
   this.pad1.position.y=1.437+(1-pk1)*.16;this.pad1.rotation.x=(1-pk1)*.7;this.pad2.position.y=1.369+(1-pk2)*.16;this.pad2.rotation.x=(1-pk2)*.7;
   for(const [i,g] of this.gels.entries()){const k=sm((padE-.1-i*.3)/.45);g.visible=!!s.pads&&padE<(i?1.9:1.3);g.scale.set(.05*Math.max(.01,k),.004,(i?.065:.06)*Math.max(.01,k));}
