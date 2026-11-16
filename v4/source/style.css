@@ -539,3 +539,47 @@ body.lg #play-layout #drawer .pq-chips .chip.active{background:#30d1a8!important
 /* pass 18 · patch hunt: nothing moves under the finger while the message changes */
 #proc-screen.interactive .proc-step{min-height:3.1em}
 #proc-screen.interactive .proc-head span{min-height:2.6em;display:block}
+
+/* ── pass 19 · how-to-play guide ───────────────────────────────────────────── */
+.guide{font-size:15.5px;line-height:1.5}
+.guide h3{margin:20px 0 10px;font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:#7cedd2}
+.guide-lang{display:flex;gap:6px;justify-content:flex-end;margin:-4px 0 8px}
+.guide-lang button{width:auto;padding:6px 14px;border-radius:999px;font-size:14px;min-height:36px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
+.guide-lang button.active{background:#30d1a8;color:#03241c;border-color:transparent;font-weight:700}
+.guide-lead{font-size:17px;line-height:1.5;margin:0 0 4px}
+.guide-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
+.guide-steps li{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;background:rgba(124,237,210,.07);border:1px solid rgba(124,237,210,.22)}
+.guide-steps i{font-style:normal;font-size:26px;line-height:1;flex:0 0 34px;text-align:center}
+.guide-steps b{display:block;font-size:15.5px;margin-bottom:2px;color:#eafff9}.guide-steps span{display:block;font-size:14.5px;opacity:.92}
+.guide-dock{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px}
+.guide-dock p{margin:0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);border-left:3px solid #30d1a8}
+.guide-dock b{display:block;font-size:15px}.guide-dock span{display:block;font-size:13.5px;opacity:.8}
+.guide-clock{margin:0;padding:12px 14px;border-radius:14px;background:rgba(255,178,77,.1);border:1px solid rgba(255,178,77,.4)}
+.guide-games{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px}
+.guide-games p{margin:0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.05);display:grid;grid-template-columns:30px 1fr;column-gap:8px}
+.guide-games i{font-style:normal;font-size:22px;grid-row:span 2}.guide-games b{font-size:15px}.guide-games span{font-size:13.5px;opacity:.85}
+.guide-score{margin:0;padding-left:20px}.guide-score li{margin:4px 0}
+.guide-tips{font-size:13.5px;opacity:.75;margin:14px 0 10px}
+
+/* ── pass 19 · futuristic HUD accents (text-shadow and borders only: nothing that costs frames) ── */
+#home h1{background:linear-gradient(100deg,#f2fbf8 20%,#7cedd2 60%,#6fd0ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+#home h1 em,#home h1 i{-webkit-text-fill-color:#7cedd2;text-shadow:0 0 28px rgba(124,237,210,.45)}
+.case-card{position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.case-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--case-color,#7cedd2);box-shadow:0 0 14px var(--case-color,#7cedd2);opacity:.85}
+.case-card:hover,.case-card:focus-visible{transform:translateX(4px);border-color:var(--case-color,#7cedd2)!important;box-shadow:0 0 0 1px var(--case-color,#7cedd2),0 10px 30px rgba(0,0,0,.35)}
+.case-card:active{transform:scale(.985)}
+.vital strong{text-shadow:0 0 18px currentColor}
+#stage-top #clock,#clock{text-shadow:0 0 16px rgba(124,237,210,.5);font-variant-numeric:tabular-nums}
+#dock button.active{box-shadow:0 0 0 1px rgba(124,237,210,.55),0 0 22px rgba(124,237,210,.28),inset 0 -2px 0 #7cedd2}
+#dock button{transition:transform .12s ease,box-shadow .2s ease}#dock button:active{transform:scale(.96)}
+#stage::after{content:'';position:absolute;inset:8px;pointer-events:none;z-index:2;border-radius:14px;
+ background:
+  linear-gradient(#7cedd2,#7cedd2) left top/22px 2px no-repeat,linear-gradient(#7cedd2,#7cedd2) left top/2px 22px no-repeat,
+  linear-gradient(#7cedd2,#7cedd2) right top/22px 2px no-repeat,linear-gradient(#7cedd2,#7cedd2) right top/2px 22px no-repeat,
+  linear-gradient(#7cedd2,#7cedd2) left bottom/22px 2px no-repeat,linear-gradient(#7cedd2,#7cedd2) left bottom/2px 22px no-repeat,
+  linear-gradient(#7cedd2,#7cedd2) right bottom/22px 2px no-repeat,linear-gradient(#7cedd2,#7cedd2) right bottom/2px 22px no-repeat;opacity:.45}
+#drawer{box-shadow:-18px 0 50px rgba(0,0,0,.35),inset 1px 0 0 rgba(124,237,210,.25)}
+#drawer .step-label i{box-shadow:0 0 12px rgba(48,209,168,.5)}
+button.primary{box-shadow:0 0 0 1px rgba(124,237,210,.3),0 8px 26px rgba(48,209,168,.25)}
+@media(prefers-reduced-motion:reduce){.case-card,#dock button{transition:none}}
+.guide-steps b{display:inline;margin:0}.guide-steps div>b{display:block;margin-bottom:2px}

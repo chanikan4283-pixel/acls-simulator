@@ -43,7 +43,7 @@ async def case4(pg):
 async def case5(pg):
     await start(pg,5); await act(pg,'pulse'); await act(pg,'monitor'); await act(pg,'bvm'); await act(pg,'history'); await pg.evaluate("sim.action('patch')"); await act(pg,'naloxone')
     await pg.evaluate("openPanel('meds')"); await act(pg,'insert-iv'); await ff(pg,182); await act(pg,'pulse'); await act(pg,'cpr'); await med(pg,'epinephrine',1,'mg')
-    await ff(pg,40); await reveal(pg); await ff(pg,40); await act(pg,'naloxone'); await act(pg,'infusion'); await handover(pg,temp=36)
+    await ff(pg,50); await reveal(pg); await ff(pg,40); await act(pg,'naloxone'); await act(pg,'infusion'); await handover(pg,temp=36)
 async def main():
     p,b,pg,errs=await browser()
     which=[int(a) for a in sys.argv[1:]] or [1,2,3,4,5]

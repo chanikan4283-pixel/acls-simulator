@@ -579,3 +579,25 @@ Verified: `npm test` 118 pass (3 new). Scripted cases 1–4 score 100; case 5 sc
 deterministic engine persona runs, while the browser script again stopped at the re-narcotisation
 wait (87, not handed over) — the same timing flake as earlier today. UI run `qa/ui20.py`, `qa/t5.py`.
 Not checked: real iPad, audio.
+
+## Pass 19 — 16 Nov 2026 night (Claude): full review, debug, design, new guide
+
+- **Debug sweep.** `qa/fuzz.mjs`: 2,000 random engine runs (160 random actions/drugs each, all five
+  cases) checking for exceptions, NaN, score out of range and impossible states (CPR with a pulse,
+  conscious in arrest, sinus without a pulse…) — clean. `qa/monkey.py`: 10 browser runs clicking
+  random visible buttons in every panel — no page errors.
+  Bugs found and fixed: `stabilityChecked` was falsy when checked at t=0; `openModal` threw if a
+  modal was already open; the flat-line quick button's label was clipped and it appeared in PEA
+  (now only once a rhythm check has actually shown asystole); the debrief said "Well done, you
+  completed" for an unfinished attempt; the case-5 QA script stopped CPR at 40 s (ROSC needs 45 s),
+  which was the "flake" reported in passes 17b/18 — the game was right, the script was wrong.
+- **Hints** now name the panel ("Assess → Check for unstable signs", "Defib / Pacer → Defibrillation,
+  200 J…", "give dextrose 50 % (Med cart)") and start cases 3 and 4 with the stability check.
+- **Guide rewritten** (`manual()`, `GUIDE`): "A case in 6 moves", the six dock buttons, the 2-minute
+  clock, things to do during CPR, score and help — as cards, with an **English / ไทย** switch
+  (remembered). Game text itself stays English.
+- **Look**: HUD corner brackets on the scene, glow on vitals and the clock, case cards with a
+  coloured light edge and hover slide, gradient headline, lit active dock button. Borders and
+  text-shadow only — no per-frame cost.
+
+Verified: `npm test` 118 pass · scripted cases 1–5 all 100, no errors.

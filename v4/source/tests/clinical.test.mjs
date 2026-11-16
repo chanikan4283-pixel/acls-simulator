@@ -43,7 +43,7 @@ test('case 5 collapse restarts the recognition window and asks for reassessment'
  const x=base(5);advance(x,90);assert.equal(x.s.pulse,false);assert.equal(x.s.assessed,false);advance(x,15);assert.equal(x.s.errors.filter(e=>e.key==='long-pause'||e.key==='cpr-delay').length,0);
 });
 test('guided hints are case-specific',()=>{
- const x=base(3);assert.match(x.hint(),/vagal/i);const y=base(4);assert.match(y.hint(),/history|12-lead/i);const z=base(1);assert.match(z.hint(),/start compressions|CPR/i);
+ const x=base(3);assert.match(x.hint(),/unstable signs/i);x.action('stability');assert.match(x.hint(),/vagal/i);const y=base(4);assert.match(y.hint(),/unstable signs/i);y.action('stability');assert.match(y.hint(),/history|12-lead/i);const z=base(1);assert.match(z.hint(),/start compressions|CPR/i);
 });
 test('case 1: calcium after the history counts as treating the cause; ROSC needs epinephrine too and says what is missing',()=>{
  const x=new Simulation(1);x.action('pulse');x.action('monitor');x.action('pads');x.action('iv');x.action('cpr');
