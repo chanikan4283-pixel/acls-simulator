@@ -10,7 +10,7 @@ const FB_DOMAINS={
 };
 const FB_KEY_DOMAIN=[
  [/^(long-pause|cpr-|vent-first|airway-first|etco2-|tube-check)/,'cpr'],
- [/^(unsafe-|stacked-shocks|shock-pulse|nonshockable|fresh-rhythm|energy|sync-arrest|not-charged|no-pads|cv-|check-artifact|rhythm-no-monitor|pacer-|not-stable)/,'rhythm'],
+ [/^(unsafe-|stacked-shocks|shock-pulse|nonshockable|fresh-rhythm|energy|sync-arrest|not-charged|no-pads|cv-|check-artifact|rhythm-no-monitor|pacer-|not-stable|flatline)/,'rhythm'],
  [/^(pacing-pain|no-sedation|comfort|sedate-arrest)/,'team'],
  [/^(cause-|no-ptx|routine-bicarb|ecg12-arrest)/,'cause'],
  [/^(post-|renal-handover|commands-first|mega-incomplete|brady-incomplete)/,'post'],

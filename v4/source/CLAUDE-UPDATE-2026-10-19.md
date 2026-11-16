@@ -474,3 +474,26 @@ shows five synced reasons with the evidence summary, the HUD cue switches to 1 b
 game's ETCO₂ chip reads 21 ↑ after coaching, and the post quiz writes all five targets and completes
 the case with no wrong targets. No page errors.
 Not checked: a real iPad, and audio.
+
+### Pass 17b — case 2 is PEA again (16 Nov 2026)
+
+Praew: *"in the real case it's still PEA"* — correct, and the pass-16 change had made the case
+clinically wrong. A septic, hypoglycaemic 68-year-old arrests in **PEA**, not asystole.
+
+- Case 2 opens in **PEA at 30/min** again (`Look beyond the rhythm` · *PEA → Asystole · Metabolic
+  causes*). Objective: *confirm the non-shockable rhythm • early epinephrine • find and treat the
+  cause without interrupting CPR*.
+- The original deterioration rule does the teaching instead: **without epinephrine, the complexes
+  disappear at 2½ minutes and the rhythm goes flat**, and the log then tells the player to run the
+  flat-line protocol before believing the flat line. The flat-line quick-action button and the idle
+  hint appear at that moment, so the pass-17 game keeps its place in the case — now at the point
+  where it is actually indicated.
+- Scoring stays fair at 100 either way: the 5-point `flatline` objective is renamed *Confirm the
+  non-shockable rhythm (flat-line protocol)* and is awarded for **either** a correct rhythm call on
+  the strip (PEA / organised, or asystole once it is flat) **or** running the flat-line protocol.
+  A player who gives epinephrine early and never sees a flat line can still reach 100.
+- The PEA protocol card gained the reasoning (*the electricity works, the pump does not*) and a
+  flat-line protocol button.
+- Tests updated: case 2 opens in PEA and scores the rhythm call; a separate case runs 160 s without
+  epinephrine, checks the rhythm has gone flat, and checks that the three protocol steps award the
+  objective only when all three are done. 115 pass.

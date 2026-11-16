@@ -71,7 +71,7 @@ test('ETCO2: about 5 with poor CPR, 10 or more with good CPR, abrupt rise with R
 test('bicarbonate is a drug order: refused as routine, accepted for evidence of hyperkalemia; PEA can be named',()=>{
  const x=new Simulation(2);x.action('iv');assert.equal(x.med('bicarb',50,'mEq'),false);assert.equal(x.s.errors.at(-1).key,'routine-bicarb');
  const y=new Simulation(1);y.action('iv');y.action('history');assert.equal(y.med('bicarb',50,'mEq'),true);assert.equal(y.med('bicarb',500,'mEq'),false);
- const z=new Simulation(2);z.action('monitor');z.action('rhythm-check');z.action('rhythm-answer',{value:'asystole'});assert.equal(z.s.rhythmAnswers.at(-1).correct,true);
+ const z=new Simulation(2);z.action('monitor');z.action('rhythm-check');z.action('rhythm-answer',{value:'pea'});assert.equal(z.s.rhythmAnswers.at(-1).correct,true);
  const w=new Simulation(2);w.action('history');assert.equal(w.action('cause',{value:'hypoglycemia'}),true);
 });
 test('vagal maneuver records its type; adenosine creates a transient monitor pause only',()=>{
