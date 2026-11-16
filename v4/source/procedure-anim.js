@@ -286,7 +286,7 @@ function paSyringe(c,x,y,angle,len,r,push,fluid,label){c.save();c.translate(x,y)
  c.save();c.translate(len*.45,0);if(Math.cos(angle)<0)c.rotate(Math.PI);c.fillStyle='#e7f1f4';c.font=uiCanvasFont('bold 11px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(label,0,-r/2-6);c.restore();c.restore();}
 
 // Interactive back inspection: the player must find and peel off every patch.
-export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{}}={}){
+export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{},onPeel=()=>{}}={}){
  document.getElementById('proc-screen')?.remove();
  const el=document.createElement('div');el.id='proc-screen';el.classList.add('interactive');
  el.innerHTML=`<div class="proc-head"><b>INSPECT THE SKIN</b><span>Log-roll · look everywhere · tap each patch to remove it</span><button class="proc-skip" aria-label="Close">✕</button></div><canvas width="720" height="420" aria-label="Patient's back: tap patches to remove them"></canvas><p class="proc-step" role="status">Log-rolling the patient…</p><button class="primary wide patch-done" hidden>Done — all patches removed</button>`;
@@ -294,15 +294,15 @@ export function playPatchHunt(host,{onDone=()=>{},onCancel=()=>{}}={}){
  const patches=[{x:250,y:170,r:-.15,label:'FENTANYL 25 mcg/h',date:'applied 3 days ago'},{x:470,y:215,r:.12,label:'FENTANYL 50 mcg/h',date:'applied last night'},{x:150,y:268,r:.4,label:'FENTANYL 50 mcg/h',date:'last night · flank'},{x:575,y:118,r:-.3,label:'FENTANYL 25 mcg/h',date:'axilla · old'}];
  let t=0,last=performance.now(),raf=0,removed=0,closed=false;
  const close=(ok)=>{if(closed)return;closed=true;cancelAnimationFrame(raf);el.remove();ok?onDone(removed):onCancel(removed);};
- el.querySelector('.proc-skip').onclick=()=>close(false);done.onclick=()=>close(true);
- cv.onpointerdown=e=>{if(t<1.2)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*720/r.width,y=(e.clientY-r.top)*420/r.height;const p=patches.find(p=>!p.peel&&Math.hypot(x-p.x,y-p.y)<60);if(p){p.peel=t;removed++;msg.textContent=removed<patches.length?`Patch removed (${removed}). Keep looking — flanks, axillae, under the gown…`:`All ${patches.length} fentanyl patches removed — she has used fentanyl patches for months (chronic use) and extra ones were added last night.`;if(removed===patches.length)done.hidden=false;}else msg.textContent='Nothing there — keep looking.';};
+ el.querySelector('.proc-skip').onclick=()=>close(removed===patches.length);done.onclick=()=>close(true);
+ cv.onpointerdown=e=>{if(t<.6){msg.textContent='Rolling her over — one second…';return;}const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*720/r.width,y=(e.clientY-r.top)*420/r.height;const p=patches.find(p=>!p.peel&&Math.hypot(x-p.x,y-p.y)<78);if(p){p.peel=t;removed++;msg.textContent=removed<patches.length?`Patch removed (${removed}). Keep looking — flanks, axillae, under the gown…`:`All ${patches.length} fentanyl patches removed — she has used fentanyl patches for months (chronic use) and extra ones were added last night.`;onPeel(removed,patches.length);if(removed===patches.length){done.hidden=false;setTimeout(()=>close(true),1600);}}else msg.textContent='Nothing there — keep looking.';};
  const frame=now=>{if(closed)return;t+=Math.min(.25,(now-last)/1000);last=now;
-  c.fillStyle='#22343a';c.fillRect(0,0,720,420);const roll=seg(t,0,1.2);
+  c.fillStyle='#22343a';c.fillRect(0,0,720,420);const roll=seg(t,0,.6);
   c.save();c.translate(360,215);c.scale(1,.55+.45*roll);const g=c.createLinearGradient(-220,-160,220,160);g.addColorStop(0,'#e4b998');g.addColorStop(1,'#c99272');c.fillStyle=g;c.beginPath();c.moveTo(-240,-150);c.bezierCurveTo(-130,-190,130,-190,240,-150);c.bezierCurveTo(270,-30,250,110,190,175);c.lineTo(-190,175);c.bezierCurveTo(-250,110,-270,-30,-240,-150);c.fill();
   c.strokeStyle='rgba(150,95,72,.55)';c.lineWidth=4;c.beginPath();c.moveTo(0,-170);c.quadraticCurveTo(6,10,0,175);c.stroke();c.lineWidth=3;for(const sx of [-1,1]){c.beginPath();c.moveTo(sx*45,-125);c.quadraticCurveTo(sx*130,-135,sx*145,-40);c.quadraticCurveTo(sx*100,-15,sx*50,-45);c.stroke();}
   c.fillStyle='#6d8fa0';c.fillRect(-260,165,520,40);c.restore();
   if(roll>=1)for(const p of patches){const k=p.peel?seg(t,p.peel,p.peel+.7):0;if(k>=1)continue;c.save();c.translate(p.x+k*160,p.y-k*140);c.rotate(p.r+k*1.4);c.globalAlpha=1-k*.9;c.fillStyle='#f3ead8';c.strokeStyle='#bfae8e';c.lineWidth=2;c.beginPath();c.roundRect?c.roundRect(-46,-30,92,60,10):c.rect(-46,-30,92,60);c.fill();c.stroke();c.fillStyle='#8a6d3b';c.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.textAlign='center';c.fillText(p.label,0,-4);c.font=uiCanvasFont('9px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillText(p.date,0,12);c.restore();}
-  if(roll>=1&&t<1.4)msg.textContent='Tap any patch you find to peel it off.';
+  if(roll>=1&&t<.8&&!removed)msg.textContent='Tap any patch you find to peel it off.';
   c.font=uiCanvasFont('12px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');c.fillStyle='#9fb6bb';c.fillText(`Removed: ${removed}`,20,404);
   raf=requestAnimationFrame(frame);};
  raf=requestAnimationFrame(frame);return {el,close};

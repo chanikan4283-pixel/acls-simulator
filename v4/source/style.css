@@ -527,3 +527,15 @@ body.lg #play-layout #drawer .pq-chips .chip.active{background:#30d1a8!important
 .fl-screen canvas{height:96px}
 /* pass 17 · flat-line quick action */
 #quick-actions .qa-flat{background:rgba(255,178,77,.16);border-color:rgba(255,178,77,.55);color:#ffd9a0}
+/* pass 18 · one-tap labs, cause pick, coached badge */
+.lab-picker .lab-chip{display:inline-flex!important;flex-direction:column;align-items:flex-start;gap:1px;width:auto!important;min-height:48px;padding:8px 14px!important;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);font-size:14.5px!important;cursor:pointer;text-align:left}
+.lab-picker .lab-chip b{font-weight:600}.lab-picker .lab-chip small{font-size:12px;opacity:.75}
+.lab-picker .lab-chip.sent{border-color:#ffb24d;background:rgba(255,178,77,.14)}.lab-picker .lab-chip.sent small{color:#ffd9a0;opacity:1}
+.lab-picker .lab-chip.back{border-color:#30d1a8;background:rgba(48,209,168,.16)}.lab-picker .lab-chip.back small{color:#7cedd2;opacity:1}
+.cause-pick{display:flex;flex-wrap:wrap;gap:6px}
+.cause-pick .chip{width:auto!important;padding:9px 12px!important;font-size:14.5px!important;min-height:42px;border-radius:10px}
+#drawer .cause-pick .chip.active,body.lg #play-layout #drawer .cause-pick .chip.active{background:#30d1a8!important;color:#03241c!important;border-color:transparent!important;font-weight:700}
+.cpr-coached{margin:6px 0 0;padding:8px 12px;border-radius:10px;background:rgba(48,209,168,.18);border:1px solid #30d1a8;color:#7cedd2;font-weight:700;font-size:14.5px;text-align:center;animation:flIn .25s ease}
+/* pass 18 · patch hunt: nothing moves under the finger while the message changes */
+#proc-screen.interactive .proc-step{min-height:3.1em}
+#proc-screen.interactive .proc-head span{min-height:2.6em;display:block}

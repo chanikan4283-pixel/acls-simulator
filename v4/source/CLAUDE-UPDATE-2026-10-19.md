@@ -541,3 +541,41 @@ and the CPR coaching bonus; warning events now get their own soft two-note chirp
 runs are unchanged except case 2 expert, now 100 because the correct PEA call scores the rhythm
 objective. Voice selection checked against simulated macOS, iPad, Windows, Chrome and
 single-voice device lists. Not checked: a real iPad, and audio itself.
+
+## Pass 18 — 16 Nov 2026 evening (Claude)
+
+Praew's list: case 3 unstable signs + sinus/BP after the 2nd sync shock; case 4 12-lead incomplete,
+assess instability, capture on every beat; labs one tap; expert consult easy to find; pick the
+cause (H or T) before handover; case 5 patch removal bug + sound; CPR coaching after ~4 good taps.
+
+- **Stability check** (`clinical.js` action `stability`, button in Assess step 3, pulse cases only):
+  reports each unstable sign — hypotension, altered consciousness, ischaemic chest pain, shock,
+  heart failure — as present/absent and the consequence (*STABLE* / *UNSTABLE → synchronized
+  cardioversion* / *→ atropine, then pacing*). Awards `assess`, and `reassess` in case 3 once she
+  has deteriorated. Refused in cardiac arrest.
+- **Case 3**: the second synchronized shock now restores sinus 84/min **and** BP 108/68, SpO₂,
+  consciousness at once (before, BP only recovered at the pulse check).
+- **12-lead** (`twelve-lead.js`): in slow rhythms each column restarts on the beat, so every lead
+  shows two whole complexes (case 4's STEMI was being cut mid-beat at 32/min). Paced 12-lead: the
+  spike window was narrower than the sampling step, so some beats lost their spike — now every beat
+  has spike + capture.
+- **Labs**: each test is a chip; one tap sends it. Chip turns amber with a countdown, green when back.
+  No Send button.
+- **Expert consult**: visible as step 4 "Call an expert" in Investigate and as its own section in
+  Handover (no longer inside a collapsed drawer).
+- **Cause before handover** (cases 1, 2, 4, 5): ten H/T chips in the Handover panel. Handover is
+  refused until one is picked; a wrong pick gives feedback and can be changed, or handed over as is.
+  `cause` now accepts a 12-lead, POCUS, temperature or the patches as supporting findings.
+- **Patch hunt** (case 5): the bug was that removal only counted after pressing a "Done" button, and
+  closing with ✕ after peeling all four recorded "not finished". Now it completes by itself 1.6 s
+  after the last patch (✕ also counts once all are off), taps are accepted after 0.6 s instead of
+  1.2 s, the hit area is larger, the panel no longer shifts as the message changes, and every peel
+  has a rip sound + toast ("Patch 2 of 4 removed"), with a chime on the last.
+- **CPR coaching**: 4 taps in a row at 100–120/min now coaches the team (was a full set of 30 at
+  80 %). Chime, "TEAM COACHED ✓" pop, the compressor answers aloud, a toast and a green badge in the
+  game say what changed (110/min · 5.5 cm).
+
+Verified: `npm test` 118 pass (3 new). Scripted cases 1–4 score 100; case 5 scores 100 in the two
+deterministic engine persona runs, while the browser script again stopped at the re-narcotisation
+wait (87, not handed over) — the same timing flake as earlier today. UI run `qa/ui20.py`, `qa/t5.py`.
+Not checked: real iPad, audio.

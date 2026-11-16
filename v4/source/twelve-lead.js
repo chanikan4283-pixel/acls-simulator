@@ -26,7 +26,7 @@ function tlLeadValue(lead,tt,p){
  const ph=((tt%rr)+rr)%rr-.2;// TL_QRS centred 0.2 s into each cycle
  const [q,r,sw]=TL_QRS[lead],w=p.qrsW/4,qx=p.q?.[lead]??q;
  v+=qx*tlG(ph,-w*1.3,w*.6)+r*tlG(ph,0,w)*(p.kind==='paced'?.8:1)+sw*tlG(ph,w*1.4,w*.7);
- if(p.kind==='paced'){v=(r>0?1:-1)*.9*tlG(ph,.03,.05)-.5*(r>0?1:-1)*tlG(ph,.2,.08);v+=(ph>-.042&&ph<-.038)?2.2:0;}
+ if(p.kind==='paced'){v=(r>0?1:-1)*.9*tlG(ph,.03,.05)-.5*(r>0?1:-1)*tlG(ph,.2,.08);v+=(ph>-.047&&ph<-.033)?1.3:0;}
  const st=p.st[lead]||0,tAmp=p.t[lead]??(r>Math.abs(sw)?.3:-.15)*(lead==='aVR'?1:1);
  // ST segment: flat-topped elevation/depression from the J point, merging into the T wave (convex 'dome' in STEMI leads).
  v+=st*Math.exp(-Math.pow((ph-.2)/.165,4))*tlSig((ph-w*1.6)/.006);
@@ -44,10 +44,13 @@ export function drawTwelveLead(canvas,profile){
  for(let y=0;y<H;y+=mm){const major=Math.round(y/mm)%5===0;c.strokeStyle=major?'#f0a8a0':'#fbd9d3';c.lineWidth=major?1:.5;c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
  const secW=25*mm,mv=10*mm,rowH=(H-40)/4,colW=(W-20)/4;
  c.strokeStyle='#1d1d1d';c.lineWidth=1.4;c.font=uiCanvasFont(`bold ${Math.round(mm*3.2)}px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif`);c.fillStyle='#1d1d1d';
+ /* Slow rhythms: at 32/min a 2.5 s column holds barely one beat and cuts the next in half, so each
+    column restarts on the beat and every lead shows two whole complexes. */
+ const slow=profile.vent<50;
  const trace=(lead,x0,y0,t0,secs)=>{c.beginPath();for(let i=0;i<=secs*secW;i++){const tt=t0+i/secW,y=y0-tlLeadValue(lead,tt,profile)*mv;i?c.lineTo(x0+i,y):c.moveTo(x0+i,y);}c.stroke();};
  TL_LEADS.forEach((row,ri)=>row.forEach((lead,ci)=>{const x0=10+ci*colW,y0=20+ri*rowH+rowH*.6;
   c.beginPath();if(ci===0){c.moveTo(x0,y0);c.lineTo(x0+mm,y0);c.lineTo(x0+mm,y0-mv);c.lineTo(x0+3*mm,y0-mv);c.lineTo(x0+3*mm,y0);c.stroke();}
-  trace(lead,x0+(ci===0?4*mm:0),y0,ci*2.5,2.5-(ci===0?4*mm/secW:0));c.fillText(lead,x0+(ci===0?5*mm:4),20+ri*rowH+14);}));
+  trace(lead,x0+(ci===0?4*mm:0),y0,slow?(ci===0?4*mm/secW:0):ci*2.5,2.5-(ci===0?4*mm/secW:0));c.fillText(lead,x0+(ci===0?5*mm:4),20+ri*rowH+14);}));
  const y0=20+3*rowH+rowH*.6;trace('II',10,y0,0,(W-20)/secW);c.fillText('II (rhythm)',14,20+3*rowH+14);
  c.font=uiCanvasFont(`${Math.round(mm*2.6)}px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif`);c.fillStyle='#7a5a57';c.fillText('25 mm/s · 10 mm/mV · synthetic teaching ECG',W-mm*70,H-8);
 }
