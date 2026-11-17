@@ -46,7 +46,7 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
  <div class="cpr-stats"><span>Cycles <b id="cpr-cycles">0</b></span><span>On rhythm <b id="cpr-acc">—</b></span><span>Best streak <b id="cpr-best">0</b></span></div>
  <label class="cpr-metro"><input type="checkbox" id="cpr-metronome" checked> Metronome click</label></div>
  <details class="cpr-team"><summary>Team CPR settings (rate &amp; depth)</summary><label>Rate <output id="rate-read"></output><input id="practice-rate" type="range" min="60" max="160" step="1" value="${s.cprRate}"></label><label>Depth <output id="depth-read"></output><input id="practice-depth" type="range" min="2" max="8" step="0.1" value="${s.cprDepth}"></label><button id="cpr-ideal" class="wide">Set ideal: 110/min · 5.5 cm</button><p id="practice-feedback" role="status"></p><p id="practice-etco2"></p></details>
- <small>Four taps in a row at 100–120/min is enough to coach the team back to 110/min and 5.5 cm — you will hear it, and the ETCO₂ climbs toward 20 mmHg. Keep going for score.</small>`;
+ <small>Four taps in a row at 100–120/min is enough to coach the team back to 110/min and 5.5 cm — you will hear it, and the ETCO₂ rises into the 15–20 mmHg range. Keep going for score.</small>`;
  const $q=q=>host.querySelector(q);const taps=[];let coachedAt=0,count=0,cycles=0,good=0,total=0,streak=0,breathUntil=0,lastBeat=0,cycleGood=0,score=0,high=0;try{high=+localStorage.getItem('acls-cpr-best')||0;}catch{}
  const pop=(text,cls)=>{const e=$q('#cpr-pop');e.textContent=text;e.className='';void e.offsetWidth;e.className='show '+cls;};const showScore=()=>{const mult=Math.min(5,1+Math.floor(streak/10));$q('#cpr-score').textContent=score;$q('#cpr-combo').textContent='×'+mult;$q('#cpr-combo').className=mult>1?'hot':'';if(score>high){high=score;try{localStorage.setItem('acls-cpr-best',high);}catch{}}$q('#cpr-high').textContent=high;};showScore();
  const continuous=()=>s.intubated;
@@ -77,7 +77,7 @@ export function mountPractice(host,type,sim,onBeat=()=>{}){
   $q('#rate-read').textContent=`${s.cprRate}/min`;$q('#depth-read').textContent=`${s.cprDepth.toFixed(1)} cm`;
   $q('#practice-feedback').textContent=cprInRange(s.cprRate,s.cprDepth)?'Team settings in the target range ✓':'Team settings outside 100–120/min and 5–6 cm';
   const boosted=s.t<(s.cprBoostUntil??-Infinity);
-  const co2=$q('#cpr-co2');co2.textContent=s.capno?Math.round(s.etco2)+(boosted?' ↑':''):'—';co2.className=s.capno?(s.etco2>=10?'hot':'cold'):'';co2.title=s.capno?'Waveform capnography · a good set of 30 pushes it up toward 20 mmHg':'Attach waveform ETCO₂ to watch your compressions work';
+  const co2=$q('#cpr-co2');co2.textContent=s.capno?Math.round(s.etco2)+(boosted?' ↑':''):'—';co2.className=s.capno?(s.etco2>=10?'hot':'cold'):'';co2.title=s.capno?'Waveform capnography · good compressions push it into the 15–20 mmHg range (aim ≥ 10)':'Attach waveform ETCO₂ to watch your compressions work';
   $q('#practice-etco2').textContent=s.capno?`Simulated ETCO₂: ${Math.round(s.etco2)} mmHg${boosted?' — rising with your coaching':''}`:'Attach waveform ETCO₂ (after the tube) to see your compressions work.';};
  }
  mountPocus(host,sim);

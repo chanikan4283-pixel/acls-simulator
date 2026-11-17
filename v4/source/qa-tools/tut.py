@@ -4,10 +4,10 @@ from PIL import Image
 def P(*a):print(*a,flush=True)
 async def main():
     p,b,pg,errs=await browser(); await pg.set_viewport_size({'width':1180,'height':820})
-    await pg.goto(URL); await pg.wait_for_timeout(1000); await pg.evaluate('setGameActive(true)'); await pg.wait_for_timeout(1200); await pg.screenshot(path='t-home.png')
+    await pg.goto(URL); await pg.wait_for_timeout(1000); await pg.evaluate('window.NO_INTRO=true;setGameActive(true)'); await pg.wait_for_timeout(1200); await pg.screenshot(path='t-home.png')
     await pg.evaluate("document.querySelector('.mascot-actions button.primary').click()"); await pg.wait_for_timeout(600); await pg.screenshot(path='t-intro.png')
     await pg.fill('#player-name','QA'); await pg.click('#start-case'); await pg.wait_for_timeout(800); await pg.evaluate('skipCutscene()'); await pg.wait_for_timeout(1200)
-    shots={13:'t-lab',24:'t-trop',23:'t-rosc'}
+    shots={14:'t-cpr',16:'t-tube',17:'t-etco2'}
     for guard in range(200):
         st=await pg.evaluate("tut?[tut.i,(document.querySelector('.tut-target')||{}).id||(document.querySelector('.tut-target')||{}).dataset&&JSON.stringify(document.querySelector('.tut-target').dataset)||null,document.querySelector('.mascot-bubble p')?.textContent.slice(0,60)]:null")
         if st is None: P('tutorial over'); break
@@ -15,7 +15,10 @@ async def main():
         if i in shots: await pg.screenshot(path=shots.pop(i)+'.png')
         btn=await pg.evaluate("(()=>{const b=document.querySelector('.mascot-actions button.primary');if(b&&b.offsetParent){b.click();return b.textContent;}return null})()")
         if btn: P(i,'btn',btn); await pg.wait_for_timeout(500); continue
-        if i==21:
+        if tg=='compression-tap':
+            await pg.evaluate("""(()=>{const real=performance.now.bind(performance);let T=real();performance.now=()=>T;for(let k=0;k<7;k++){T+=545;document.getElementById('compression-tap').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));}performance.now=real;})()""")
+            P(i,tg,'|',txt); await pg.wait_for_timeout(900); continue
+        if i==25:
             await pg.evaluate("(()=>{const t=document.querySelector('.tut-target');if(!t)return;if(t.id==='dose-other'){t.value='1';t.dispatchEvent(new Event('input',{bubbles:true}));}else t.click();})()")
         else:
             await pg.evaluate("document.querySelector('.tut-target')?.click()")

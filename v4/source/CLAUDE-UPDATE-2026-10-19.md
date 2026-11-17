@@ -711,3 +711,39 @@ run through lab on tuturial and it's a bit bug no rosc until end of cycle"*
 
 Verified: `npm test` 121 pass · tutorial run 100 · cases 1–5 scripted 100 · early check right after the
 last requirement gives ROSC (case 2, t = 61 s) · 2,400-run fuzz clean.
+
+## Pass 24 — 17 Nov 2026 (Claude): temperature control wording, target ranges, tutorial CPR game + tube, opening scene, quiet ROSCo
+
+Praew: *"recheck post rosc temperature controlled (use this word according to acls 2025) it's normotemp?
+and the range of etco2 and paco2 is more like range not exact number as well as saturation, and on
+tutorial make the player play cpr game and intubate, make animation before the game at home screen
+include ROSCo, you can also use codex to improve the animation make rosco more alive, and have button
+to quiet rosco"*
+
+- **AHA 2025 check** (Adult Post-Cardiac Arrest Care algorithm, cpr.heart.org): SpO₂ 90–98 % (PaO₂
+  60–105), PCO₂ 35–45 mmHg, MAP ≥ 65, "deliberate strategy of temperature control with goal 32 °C to
+  37.5 °C"; Part 11 summary: ≥ 36 h. The engine already used these numbers; wording now says
+  **temperature control** everywhere, and explains that any steady target 32–37.5 °C counts —
+  **controlled normothermia included** — plus fever prevention. The algorithm gives no numeric
+  post-ROSC ETCO₂ target, so none was invented; CPR-time ETCO₂ text now says "aim for at least 10,
+  15–20 means great compressions".
+- **Post-ROSC quiz shows ranges**: SpO₂ 88–92 / **90–98** / 100 · PaCO₂ 25–30 / **35–45** / 50–60 ·
+  MAP ≥50 / ≥55 / **≥65** · temperature control 30–32 / **32–37.5** / 37.5–38.5 °C · ≥12 / ≥24 / **≥36 h**.
+  The debrief echoes the range the player picked (`postLabel`).
+- **Tutorial** (33 steps) now also has the player: coach CPR in the tap game (4 good taps), bag-mask,
+  intubate (real airway procedure), attach waveform ETCO₂ — with ROSCo explaining 1 breath / 6 s and
+  ETCO₂ during CPR.
+- **ROSCo more alive (Codex again):** in the same Codex chat, 8 more frames of the same cat — blink,
+  wave ×2, run ×2, jump, sleep, hero with heart. All 17 images re-encoded with one shared crop so frames
+  line up (`mascot-art.js`, ≈300 KB). ROSCo now blinks every few seconds, waves when tapped, and
+  `rosco.play(frames)` flips frames.
+- **Opening scene** (`playIntro`, `#splash`): ECG sweeps across, ROSCo runs in (run1/run2), hops, hero
+  pose, title "ACLS sim" lights up, he waves with "Meow! Ready to run the code? 🐾", "Let's go ▶" or
+  tap anywhere. Once per page load after unlock. (`#intro` was already taken by the case-intro
+  screen — hence `#splash`.) QA scripts set `window.NO_INTRO` via an init script.
+- **Quiet button** 🔔/🔕 on the cat (remembered in `acls-rosco-quiet`): quiet ROSCo makes no meows, no
+  unprompted reactions or fidgets, and idle nudges fall back to the small 💭 pill; he still answers
+  the Hint button and still guides the tutorial. (Fixed a name clash: the getter is `isQuiet`.)
+
+Verified: `npm test` 121 pass · tutorial run 100 (incl. CPR game, intubation, ETCO₂) · cases 1–5
+scripted 100 · opening scene and quiet toggle screenshotted. Not checked: real iPad, sound.
