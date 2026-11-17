@@ -667,3 +667,24 @@ VF arrest story, 2D cartoon in a corner, English, cat also on home / real cases 
 Verified: `npm test` 121 pass (3 new: tutorial path to 100, tutorial pause warning, AF no-P test) ·
 browser run of the whole tutorial clicking only the highlighted targets → 100, no errors · cases 1–5
 scripted 100 · 2,400-run fuzz clean. Not checked: real iPad, sound.
+
+## Pass 22 — 17 Nov 2026 (Claude): Codex-drawn ROSCo, IV only
+
+Praew: *"use codex to generate the mascot because this Rosco not cute enough and for all case, no IO
+choice, just IV"*
+
+- **Mascot art by Codex.** Claude opened Praew's Codex app (new chat in the *acls* project) and asked
+  it to draw ROSCo: chibi black cat, big glossy yellow eyes, pink nose/ears, small stethoscope,
+  sticker style, transparent background, same character in 9 moods. Codex saved 512 px PNGs + a
+  contact sheet to `outputs\acls-v4\mascot\` (source kept in `mascot-src/` in the repo).
+  `mascot-art.js` (new, generated) embeds them as 300 px WebP (≈210 KB total) so `play.html` stays
+  self-contained; `mascot.js` now swaps `<img>` per mood instead of drawing SVG; `mascotSVG(mood)`
+  (debrief) returns the image. CSS adds a light rim glow so the black cat reads on the dark UI, and
+  per-mood motion (shake, sob, hop, tilt). `build.mjs` includes `mascot-art.js`.
+- **IV only.** The Intraosseous button is gone from the med cart; drug routes offer IV (naloxone also
+  IM); the tutorial step is now "Peripheral IV" (ready in ~20 s); text across the game says "1 mg IV".
+  The engine still understands `insert-io` (old saves/tests), but nothing in the UI offers it.
+- QA script case 2 waits 22 s for the IV before epinephrine.
+
+Verified: `npm test` 121 pass · tutorial run 100 · cases 1–5 scripted 100 · screenshots of home,
+case, debrief with the new cat. Not checked: real iPad, sound.

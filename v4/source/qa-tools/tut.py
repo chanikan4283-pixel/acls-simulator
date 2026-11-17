@@ -20,7 +20,7 @@ async def main():
         else:
             await pg.evaluate("document.querySelector('.tut-target')?.click()")
         P(i,tg,'|',txt); await pg.wait_for_timeout(1500 if i in (7,8,9,16,17,18) else 700)
-        if i in (11,): await ff(pg,11)
+        if i in (11,): await ff(pg,21)
     await pg.wait_for_timeout(1200); await pg.screenshot(path='t-report.png')
     P('final',await pg.evaluate("[sim?sim.s.score:null,sim?sim.s.ended:null,sim?sim.s.errors.map(e=>e.key):null]"))
     P('ERR',errs[:4]); await b.close(); await p.stop()

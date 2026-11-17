@@ -690,3 +690,19 @@ button.primary{box-shadow:0 0 0 1px rgba(124,237,210,.3),0 8px 26px rgba(48,209,
 .mascot[data-where="lab"] .mascot-bubble::after{right:22px;bottom:-9px;border:9px solid transparent;border-top-color:#fffdf6;border-bottom:0}
 .mascot[data-where="lab"] .mascot-cat{width:80px;height:84px}
 .home-copy{padding-bottom:150px}
+
+/* pass 22 · ROSCo artwork (Codex-generated stickers) */
+.mascot-cat{width:132px;height:132px}
+.mascot-cat img,.mascot-static img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.85)) drop-shadow(0 0 10px rgba(255,236,170,.35)) drop-shadow(0 10px 14px rgba(0,0,0,.45))}
+.mascot-cat{filter:none}
+.mascot[data-mood="shocked"] .mascot-cat img{animation:mShakeImg .12s linear 5}
+@keyframes mShakeImg{0%,100%{transform:none}50%{transform:translateX(4px) rotate(2deg)}}
+.mascot[data-mood="cry"] .mascot-cat img{animation:mSobImg .55s ease-in-out infinite}
+@keyframes mSobImg{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg) translateY(2px)}75%{transform:rotate(3deg) translateY(2px)}}
+.mascot[data-mood="party"] .mascot-cat img,.mascot[data-mood="excited"] .mascot-cat img{animation:mHop .5s ease-in-out infinite alternate}
+@keyframes mHop{from{transform:translateY(0)}to{transform:translateY(-7px) rotate(-2deg)}}
+.mascot[data-mood="thinking"] .mascot-cat img{animation:mTilt 2.4s ease-in-out infinite}
+@keyframes mTilt{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+.mascot[data-where="lab"] .mascot-cat{width:96px;height:96px}
+.mascot-static{width:104px;height:104px}
+@media(max-width:900px){.mascot-cat{width:100px;height:100px}}
