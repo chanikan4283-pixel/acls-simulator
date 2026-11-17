@@ -20,8 +20,10 @@ export function waveform(t,rhythm,hr=75,pacerRate=70){
  if(rhythm==='AF'){/* Atrial fibrillation: no P waves at all, a chaotic fibrillatory baseline (several incommensurate
    frequencies 350–650/min whose amplitudes drift, so no two waves look alike), and irregularly irregular narrow QRS.
    The T wave sits a fixed 0.24 s after each R so it can never be mistaken for a P wave before the next beat. */
-  let out=(.035+.02*Math.sin(t*1.9))*Math.sin(t*39.6+1.1*Math.sin(t*2.3))+(.028+.015*Math.sin(t*1.3+1))*Math.sin(t*55.3+.8*Math.sin(t*3.1))+.018*Math.sin(t*68.1+2*Math.sin(t*.9));
-  for(const beat of afBeatTimes(t-.6,t+.1,hr)){const z=t-beat;out+=-.12*gaussian(z,-.022,.008)+1.0*gaussian(z,0,.010)-.24*gaussian(z,.022,.010)+.16*gaussian(z,.24,.055);}return out;}
+  /* f waves: fast (≈400–700/min) and small, so they read as a shimmering baseline and can never form a rounded,
+     P-shaped bump; the T wave is low and early so nothing rounded ever sits in front of the next QRS. */
+  let out=(.03+.012*Math.sin(t*1.7))*Math.sin(t*47.1+1.3*Math.sin(t*2.9))+(.024+.01*Math.sin(t*1.1+1))*Math.sin(t*66.7+.9*Math.sin(t*3.7))+.016*Math.sin(t*83.3+2*Math.sin(t*1.3));
+  for(const beat of afBeatTimes(t-.6,t+.1,hr)){const z=t-beat;out+=-.12*gaussian(z,-.022,.008)+1.0*gaussian(z,0,.010)-.24*gaussian(z,.022,.010)+.05*gaussian(z,.2,.045);}return out;}
  if(rhythm==='MOBITZ1'||rhythm==='MOBITZ2'){
   let out=0;const period=.8,n=Math.floor(t/period);for(let i=n-2;i<=n+1;i++){const step=mod(i,rhythm==='MOBITZ1'?4:3),p=i*period+.10,pr=rhythm==='MOBITZ1'?[.18,.27,.32,.34][step]:.18;/* Wenckebach: PR lengthens by smaller steps, so R-R shortens before the dropped beat */out+=.12*gaussian(t,p,.032);if(step!==(rhythm==='MOBITZ1'?3:2))out+=narrow(t-(p+pr),period);}return out;
  }

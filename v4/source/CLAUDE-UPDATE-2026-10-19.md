@@ -636,3 +636,34 @@ make sound effect and more game like"*
 Verified: `npm test` 118 pass; strips rendered and checked for AF, flutter (75 and 150) and CHB; a
 browser run of the lab (printing, answering, scoring, result screen) with no page errors.
 Not checked: the beeps on a real device.
+
+## Pass 21 — 17 Nov 2026 (Claude): ROSCo the cat + guided tutorial
+
+Praew: *"af should not have p wave, delete electrical capture ecg in ecg coach, and make another scene,
+call guide, make another easy scene, and guide every step like in the real scene, make it more like
+duolingo style maybe create guild mascot, a funny blackcat with yellow eye…"* — answered questions:
+VF arrest story, 2D cartoon in a corner, English, cat also on home / real cases / Rhythm Lab / debrief.
+
+- **AF**: f waves now fast (≈400–700/min) and small, T wave 0.05 mV — nothing rounded sits before a
+  QRS. New test asserts the 0.25 s before every QRS stays < 0.12 mV.
+- **Rhythm Lab**: "Paced rhythm — electrical capture" removed (16 strips).
+- **ROSCo** (`mascot.js`, new): a 2D SVG black cat with yellow eyes and a stethoscope, nine moods
+  (happy, excited, shocked, cry, worried, proud, thinking, party, cool) with blink, tail wag, jump,
+  sob, tears, sweat, confetti; a speech bubble with Duolingo-style buttons; synthesized meows per mood.
+  Tap the cat for a random line. Lives in one element moved between screens (`rosco.mount`).
+- **Tutorial** = case 6 in the engine (`CASES[5]`, `tutorial:true`, shown first as "00 · Tutorial with
+  ROSCo"; rubric totals 100). A real VF arrest: pulse check → CPR → monitor → pads during CPR →
+  rhythm check → VF → charge → clear → shock → CPR → IO → history → (⏩ skip 2 min) → rhythm check →
+  shock 2 → epinephrine after the 2nd shock (AHA order) → (⏩) → ROSC → pulse → commands → cause →
+  post-ROSC targets → debrief. 27 steps in `TUT_STEPS` (app.js): one instruction, one glowing target
+  with a 🐾 paw, the right panel auto-pointed, a dramatic reaction when done, progress bar + Exit.
+  Long pauses in the tutorial are a gentle warning, not a penalty. Idle hints and team bubbles are off
+  during the tutorial. ROSC needs 2 shocks + epinephrine + 45 s CPR.
+- **Cat elsewhere**: home greeting with "▶ Start tutorial"; occasional reactions in real cases (≤ 1 per
+  14 s, cheers for ≥ 10-point steps, drama for errors, party at ROSC); Rhythm Lab reactions per answer
+  (bubble lets taps through); debrief header with a mood picked from the score.
+- Guide (EN/TH) now points first-time players to the tutorial. Home says 7 experiences.
+
+Verified: `npm test` 121 pass (3 new: tutorial path to 100, tutorial pause warning, AF no-P test) ·
+browser run of the whole tutorial clicking only the highlighted targets → 100, no errors · cases 1–5
+scripted 100 · 2,400-run fuzz clean. Not checked: real iPad, sound.

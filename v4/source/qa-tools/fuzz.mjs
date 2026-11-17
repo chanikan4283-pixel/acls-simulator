@@ -5,7 +5,7 @@ const MEDS=[['epinephrine',1,'mg'],['amiodarone',300,'mg'],['amiodarone',150,'mg
 const data=a=>a==='charge'?{energy:pick([50,100,120,200,360]),sync:R()<.4}:a==='labs'?{tests:[pick(Object.keys(LAB_TESTS))]}:a==='pacer'?{rate:pick([60,70,80]),ma:pick([0,30,60,66,90])}:a==='post'?{spo2:pick([0,94,100]),map:pick([55,65]),co2:40,temp:pick([0,36]),hours:pick([0,36])}:a==='cause'?{value:pick(['hyperk','metabolic','toxin','coronary','hypoxia','svt'])}:a==='rhythm-answer'?{value:pick(['shockable','pea','asystole','brady','narrow','organized','sinus'])}:a==='flatline-step'?{step:pick(['cable','gain','lead','x'])}:a==='fluid-bolus'?{ml:pick([250,500,1000])}:a==='vagal'?{type:pick(['valsalva','carotid'])}:a==='pocus'?{view:pick(['cardiac','lung'])}:{};
 const problems={};const note=(k,d)=>{(problems[k]??=[]).length<3&&problems[k].push(d);};
 let runs=0,ended=0,rosc=0;
-for(let id=1;id<=5;id++)for(let n=0;n<400;n++){seed=id*100000+n;const x=new Simulation(id,'guided');const trail=[];runs++;
+for(let id=1;id<=6;id++)for(let n=0;n<400;n++){seed=id*100000+n;const x=new Simulation(id,'guided');const trail=[];runs++;
  try{for(let k=0;k<160&&!x.s.ended;k++){
    if(R()<.3){const m=pick(MEDS);trail.push('med:'+m[0]);const r=x.med(m[0],m[1],m[2],pick(['IV','IO','IM']));}
    else{const a=pick(ACTS);trail.push(a);x.action(a,data(a));}
