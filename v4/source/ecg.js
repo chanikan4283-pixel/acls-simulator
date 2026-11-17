@@ -17,15 +17,27 @@ export function waveform(t,rhythm,hr=75,pacerRate=70){
  if(rhythm==='VF')return (.8+.2*Math.sin(t*1.7))*(.20*Math.sin(t*19+.7*Math.sin(t*2.1))+.16*Math.sin(t*31.2)+.08*Math.sin(t*47.5));
  if(rhythm==='ASYSTOLE')return .004*Math.sin(t*17);
  if(rhythm==='TORSADES')return (.22+.78*Math.pow(Math.sin(t*1.25),2))*Math.sin(t*23+1.4*Math.sin(t*1.25));
- if(rhythm==='AF'){let out=.018*Math.sin(t*37)+.012*Math.sin(t*53.7)+.009*Math.sin(t*71);for(const beat of afBeatTimes(t-.5,t+.1,hr))out+=narrow(t-beat,rr);return out;}
+ if(rhythm==='AF'){/* Atrial fibrillation: no P waves at all, a chaotic fibrillatory baseline (several incommensurate
+   frequencies 350–650/min whose amplitudes drift, so no two waves look alike), and irregularly irregular narrow QRS.
+   The T wave sits a fixed 0.24 s after each R so it can never be mistaken for a P wave before the next beat. */
+  let out=(.035+.02*Math.sin(t*1.9))*Math.sin(t*39.6+1.1*Math.sin(t*2.3))+(.028+.015*Math.sin(t*1.3+1))*Math.sin(t*55.3+.8*Math.sin(t*3.1))+.018*Math.sin(t*68.1+2*Math.sin(t*.9));
+  for(const beat of afBeatTimes(t-.6,t+.1,hr)){const z=t-beat;out+=-.12*gaussian(z,-.022,.008)+1.0*gaussian(z,0,.010)-.24*gaussian(z,.022,.010)+.16*gaussian(z,.24,.055);}return out;}
  if(rhythm==='MOBITZ1'||rhythm==='MOBITZ2'){
   let out=0;const period=.8,n=Math.floor(t/period);for(let i=n-2;i<=n+1;i++){const step=mod(i,rhythm==='MOBITZ1'?4:3),p=i*period+.10,pr=rhythm==='MOBITZ1'?[.18,.27,.32,.34][step]:.18;/* Wenckebach: PR lengthens by smaller steps, so R-R shortens before the dropped beat */out+=.12*gaussian(t,p,.032);if(step!==(rhythm==='MOBITZ1'?3:2))out+=narrow(t-(p+pr),period);}return out;
  }
- if(rhythm==='AFLUTTER'){// Typical flutter: 300/min sawtooth F waves (negative in lead II), 2:1 conduction → 150/min, no isoelectric baseline.
-  const f=mod(t,.2)/.2,saw=.13*(1-2*Math.min(1,f/.82))+(f>.82?.26*(f-.82)/.18:0);let out=saw;const q=phase(t,.4,.07);
-  out+=-.10*gaussian(q,-.023,.008)+.95*gaussian(q,0,.010)-.22*gaussian(q,.023,.010);return out;}
+ if(rhythm==='AFLUTTER'){/* Typical (counter-clockwise) flutter in lead II: negative sawtooth F waves at 300/min — a slow
+   downslope, then a sharp upstroke — with no isoelectric baseline between them. The conduction ratio comes from the
+   ventricular rate (150 → 2:1, 100 → 3:1, 75 → 4:1) and every QRS lands on the same point of the F cycle (fixed FR),
+   which is what makes flutter regular. */
+  const ratio=Math.max(2,Math.min(4,Math.round(300/Math.max(60,hr||75)))),f=mod(t,.2)/.2;
+  let out=f<.78?.11-.27*(f/.78):-.16+.27*((f-.78)/.22);const q=phase(t,.2*ratio,.13);
+  out+=-.10*gaussian(q,-.023,.008)+1.0*gaussian(q,0,.010)-.22*gaussian(q,.023,.010)+.12*gaussian(q,.22,.05);return out;}
  if(rhythm==='AVB1')return [-1,0,1].reduce((v,k)=>{const z=x+k*rr;return v+narrow(z,rr)+.12*gaussian(z,-.30,.032);},0);// PR ≈ 0.32 s, every P conducted
- if(rhythm==='CHB')return wide(x)+.12*gaussian(phase(t,.8,.10),0,.032);
+ if(rhythm==='CHB'){/* Complete heart block: P waves march through at their own regular rate (~85/min) and land anywhere —
+   before, inside or on the T wave of a QRS — with no fixed PR. The ventricles beat on their own, slowly, with a broad
+   ventricular escape complex (QRS ≈ 0.16 s, discordant T). */
+  const pp=60/85;let out=0;for(let k=-1;k<=1;k++){const z=x+k*rr;out+=-.18*gaussian(z,-.06,.022)+.95*gaussian(z,0,.05)-.45*gaussian(z,.075,.028)-.24*gaussian(z,.32,.08);}
+  return out+.18*gaussian(phase(t,pp,.05),0,.034);}
  if(rhythm==='PACED_NO_CAPTURE')return waveform(t,'CHB',hr)+1.55*gaussian(phase(t,60/pacerRate,.24),0,.002);
  if(rhythm==='PACED'){const q=phase(t,rr,.30);return 1.55*gaussian(q,-.085,.002)+wide(q);}
  // PEA in these cases (severe acidosis / hypoxia) is shown as a slow, wide idioventricular rhythm without P waves.
@@ -36,12 +48,12 @@ export function waveform(t,rhythm,hr=75,pacerRate=70){
 export class Trace{
  constructor(canvas,{paper=false,seconds=null,gain=1,lead='II'}={}){this.canvas=canvas;this.paper=paper;this.seconds=seconds;this.gain=gain;this.lead=lead;this.ctx=canvas.getContext('2d');this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(canvas);this.resize();}
  resize(){const r=this.canvas.getBoundingClientRect();const d=Math.min(devicePixelRatio,2);this.canvas.width=Math.max(1,r.width*d);this.canvas.height=Math.max(1,r.height*d);this.ctx.setTransform(d,0,0,d,0,0);this.w=r.width;this.h=r.height;}
- draw(time,rhythm,hr,{active=true,cpr=false,staticStrip=false,pacerRate=70,sync=false}={}){const x=this.ctx,w=this.w,h=this.h;if(!w||!h)return;x.clearRect(0,0,w,h);x.fillStyle=this.paper?'#f8f1e9':'#101e23';x.fillRect(0,0,w,h);
+ draw(time,rhythm,hr,{active=true,cpr=false,staticStrip=false,pacerRate=70,sync=false,reveal=null}={}){const x=this.ctx,w=this.w,h=this.h;if(!w||!h)return;x.clearRect(0,0,w,h);x.fillStyle=this.paper?'#f8f1e9':'#101e23';x.fillRect(0,0,w,h);
   const pxPerSec=this.seconds?w/this.seconds:100,small=pxPerSec/25,effectiveGain=[.25,.5,1,2].filter(g=>g<=this.gain&&small*10*g<=h*.35).at(-1)||.25,voltage=small*10*effectiveGain;x.lineWidth=.5;for(let n=0;n*small<w;n++){const i=n*small;x.strokeStyle=this.paper?(n%5===0?'#dba8a3':'#efdad2'):(n%5===0?'#263b40':'#192b30');x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();}for(let n=0;n*small<h;n++){const i=n*small;x.strokeStyle=this.paper?(n%5===0?'#dba8a3':'#efdad2'):(n%5===0?'#263b40':'#192b30');x.beginPath();x.moveTo(0,i);x.lineTo(w,i);x.stroke();}
   if(!active){x.fillStyle='#83989b';x.font=uiCanvasFont('13px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='center';x.fillText('ATTACH MONITOR',w/2,h/2);return;}
   const start=staticStrip?0:time-w/pxPerSec;x.strokeStyle=this.paper?'#293c40':'#9be4b9';x.lineWidth=1.8;x.lineJoin='round';const sig=[];x.beginPath();
   // Sample at ≤2 ms (sub-pixel) so the narrow QRS is never aliased: otherwise R-wave heights jump up and down as the strip scrolls.
-  const sub=Math.max(1,Math.ceil(1/(pxPerSec*.002)));let first=true;for(let i=0;i<w;i++){let peak=-1e9;for(let k=0;k<sub;k++){const xi=i+k/sub,t=start+xi/pxPerSec;const signal=waveform(t,rhythm,hr,pacerRate)+(cpr?.12*Math.sin(t*11.52):0);if(signal>peak)peak=signal;const y=h*.62-signal*voltage;if(first){x.moveTo(xi,y);first=false;}else x.lineTo(xi,y);}sig.push(peak);}x.stroke();
+  const sub=Math.max(1,Math.ceil(1/(pxPerSec*.002)));const stopX=reveal==null?w:Math.min(w,reveal*pxPerSec);let first=true;for(let i=0;i<stopX;i++){let peak=-1e9;for(let k=0;k<sub;k++){const xi=i+k/sub,t=start+xi/pxPerSec;const signal=waveform(t,rhythm,hr,pacerRate)+(cpr?.12*Math.sin(t*11.52):0);if(signal>peak)peak=signal;const y=h*.62-signal*voltage;if(first){x.moveTo(xi,y);first=false;}else x.lineTo(xi,y);}sig.push(peak);}x.stroke();if(reveal!=null&&stopX<w){const yy=h*.62-(waveform(start+stopX/pxPerSec,rhythm,hr,pacerRate))*voltage;x.save();x.fillStyle=this.paper?'#1f8f75':'#7cedd2';x.shadowColor=x.fillStyle;x.shadowBlur=12;x.beginPath();x.arc(stopX,yy,3.5,0,7);x.fill();x.restore();}
   // SYNC mode: the defibrillator marks each detected R wave (no marker on VF / asystole).
   if(sync&&!['VF','ASYSTOLE','VF_FINE','VF_COARSE'].includes(rhythm)){const win=Math.max(4,Math.round(pxPerSec*.12));x.fillStyle=this.paper?'#b0302a':'#ffffff';for(let i=win;i<sig.length-win;i++){if(sig[i]<.45)continue;let peak=true;for(let k=i-win;k<=i+win;k++)if(sig[k]>sig[i]){peak=false;break;}if(peak){const yy=h*.62-sig[i]*voltage-8;x.beginPath();x.moveTo(i-5,yy-9);x.lineTo(i+5,yy-9);x.lineTo(i,yy-1);x.closePath();x.fill();i+=win;}}x.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='right';x.fillText('SYNC',w-8,15);x.textAlign='left';}
   if(rhythm==='PACED'||rhythm==='PACED_NO_CAPTURE'){const rr=60/(rhythm==='PACED'?Math.max(20,hr||70):pacerRate),offset=rhythm==='PACED'?.215:.24;x.beginPath();for(let n=Math.ceil((start-offset)/rr);n*rr+offset<=start+w/pxPerSec;n++){const xx=(n*rr+offset-start)*pxPerSec;x.moveTo(xx,h*.62+.3*voltage);x.lineTo(xx,h*.62-2.1*voltage);}x.save();x.strokeStyle=this.paper?'#1a1a1a':'#ffe066';x.lineWidth=2.4;x.stroke();x.fillStyle=this.paper?'#1a1a1a':'#ffe066';x.font=uiCanvasFont('bold 10px Bahnschrift, "Avenir Next", "Segoe UI", sans-serif');x.textAlign='right';if(!staticStrip)x.fillText(rhythm==='PACED'?'PACING · CAPTURE':'PACING · NO CAPTURE',w-8,28);x.restore();}

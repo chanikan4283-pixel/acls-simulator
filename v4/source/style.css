@@ -583,3 +583,34 @@ body.lg #play-layout #drawer .pq-chips .chip.active{background:#30d1a8!important
 button.primary{box-shadow:0 0 0 1px rgba(124,237,210,.3),0 8px 26px rgba(48,209,168,.25)}
 @media(prefers-reduced-motion:reduce){.case-card,#dock button{transition:none}}
 .guide-steps b{display:inline;margin:0}.guide-steps div>b{display:block;margin-bottom:2px}
+
+/* ── pass 20 · Rhythm Lab as a game ───────────────────────────────────────── */
+.lab-hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
+.lab-chip{padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(124,237,210,.3);font-size:13px;letter-spacing:.08em}
+.lab-chip b{font-size:18px;color:#7cedd2;margin-left:4px;font-variant-numeric:tabular-nums;text-shadow:0 0 14px rgba(124,237,210,.55)}
+.lab-streak{font-weight:700;color:#ffb24d;font-size:14.5px;min-width:1px}
+.lab-dots{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.lab-dots i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.14)}
+.lab-dots i.ok{background:#30d1a8;box-shadow:0 0 8px #30d1a8}.lab-dots i.no{background:#ff6b5e}.lab-dots i.now{background:#fff;box-shadow:0 0 0 2px rgba(124,237,210,.6)}
+.lab-timer-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.lab-timer{flex:1;height:7px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;--left:1}
+.lab-timer i{display:block;height:100%;width:calc(var(--left)*100%);background:linear-gradient(90deg,#30d1a8,#7cedd2);box-shadow:0 0 12px #30d1a8;transition:width .12s linear}
+.lab-timer.low i{background:linear-gradient(90deg,#ff6b5e,#ffb24d);box-shadow:0 0 12px #ff6b5e}
+#lab-time{min-width:72px;text-align:right;font-variant-numeric:tabular-nums;font-size:14px;opacity:.85}
+.lab-strip{position:relative}
+.lab-pop{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);font-size:46px;font-weight:800;opacity:0;pointer-events:none;text-shadow:0 0 24px currentColor}
+.lab-pop.ok{color:#1f8f75}.lab-pop.no{color:#d9473b}
+.lab-pop.show{animation:labPop 1.1s ease forwards}
+@keyframes labPop{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+#trainer-options button{transition:transform .12s ease,box-shadow .2s ease,background .2s}
+#trainer-options button:active{transform:scale(.97)}
+#trainer-options button.correct{background:rgba(48,209,168,.25)!important;border-color:#30d1a8!important;box-shadow:0 0 0 1px #30d1a8,0 0 22px rgba(48,209,168,.35)}
+#trainer-options button.wrong{background:rgba(255,107,94,.2)!important;border-color:#ff6b5e!important;animation:labShake .4s}
+@keyframes labShake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+#trainer-feedback.ok{border-left:3px solid #30d1a8;padding-left:12px}#trainer-feedback.no{border-left:3px solid #ff6b5e;padding-left:12px}
+#trainer-feedback .text-btn{margin-left:6px;color:#7cedd2}
+.lab-result{text-align:center}.lab-rank{font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:#ffb24d;margin-bottom:4px}
+.lab-big{font-size:58px;font-weight:800;color:#7cedd2;text-shadow:0 0 30px rgba(124,237,210,.5);line-height:1.05}.lab-big small{display:block;font-size:14px;font-weight:500;color:#cfe;opacity:.8;letter-spacing:.06em}
+.lab-stats{display:flex;justify-content:center;gap:10px;margin:14px 0}.lab-stats p{margin:0;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.06);min-width:96px}.lab-stats b{display:block;font-size:22px}.lab-stats span{font-size:12.5px;opacity:.75}
+.lab-result ul{text-align:left;font-size:14.5px;line-height:1.45}.lab-result h3{text-align:left}
+.lab-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}.lab-actions button{width:auto;padding:10px 18px}

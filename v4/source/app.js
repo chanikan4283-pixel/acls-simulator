@@ -5,7 +5,7 @@ import {shuffled} from './trainer.js';
 import {teamMotion} from './team-motion.js';
 import {Simulation,CASES,RHYTHMS,SOURCES,VERSION,RUBRICS,LAB_TESTS,LAB_VALUES,PACE_MARGIN} from './clinical.js';
 import {Ward} from './scene.js';
-import {Trace,displayRhythm} from './ecg.js';
+import {Trace,displayRhythm,waveform} from './ecg.js';
 import {playProcedure,playPatchHunt,playListen,playPads} from './procedure-anim.js';
 import {drawTwelveLead,twelveLeadProfile} from './twelve-lead.js';
 const $=id=>document.getElementById(id),escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -577,10 +577,54 @@ $('lock-form').onsubmit=e=>{e.preventDefault();if($('lock-code').value.trim()===
 $('lock-game').onclick=()=>setGameActive(false);
 document.querySelector('.case-library').addEventListener('click',e=>{if(!gameActive()&&!e.target.closest('#lock-panel')){e.stopPropagation();e.preventDefault();$('lock-code').focus();}},true);
 applyLock();
-$('trainer-launch').onclick=()=>{trainerIndex=0;trainerScore=0;trainerDeck=shuffled(TRAINER_SET);showScreen('trainer');trainerRound();};$('trainer-exit').onclick=home;
-function trainerRound(){trainerAnswered=false;$('trainer-next').hidden=true;$('trainer-feedback').textContent='';const r=trainerDeck[trainerIndex];$('trainer-progress').textContent=`${String(trainerIndex+1).padStart(2,'0')} / ${TRAINER_SET.length} · ${trainerScore} correct`;const options=shuffled([r,...shuffled(TRAINER_SET.filter(x=>x!==r)).slice(0,3)]);$('trainer-options').innerHTML=options.map(x=>`<button data-rhythm="${x.id}">${escape(x.name)}</button>`).join('');requestAnimationFrame(()=>{trainerTrace.resize();trainerTrace.draw(0,r.id,r.hr,{staticStrip:true});});}
-$('trainer-options').onclick=e=>{const b=e.target.closest('[data-rhythm]');if(!b||trainerAnswered)return;trainerAnswered=true;const r=trainerDeck[trainerIndex],ok=b.dataset.rhythm===r.id;if(ok)trainerScore++;$('trainer-options').querySelectorAll('button').forEach(x=>{x.disabled=true;x.classList.toggle('correct',x.dataset.rhythm===r.id);});if(!ok)b.classList.add('wrong');$('trainer-feedback').innerHTML=`<b>${ok?'Correct':'Review the reasoning'} · ${escape(r.name)}</b><br>${escape(r.reason)}<br><small>Read in order: Rate → Regularity → P → PR → QRS → Clinical context</small>`;$('trainer-next').hidden=false;$('trainer-next').textContent=trainerIndex===TRAINER_SET.length-1?'View results →':'Next tracing →';};
-$('trainer-next').onclick=()=>{if(trainerIndex<TRAINER_SET.length-1){trainerIndex++;trainerRound();}else{openModal('Rhythm Lab · Complete',`<h3>${trainerScore} / ${TRAINER_SET.length} correct</h3><p>Rhythm interpretation must lead to patient assessment. Try a clinical scenario to practice decisions with incomplete information.</p><button id="lab-finish" class="primary">Choose a case</button>`);$('lab-finish').onclick=()=>{closeModal();home();};}};
+/* ── Rhythm Lab as a game ─────────────────────────────────────────────────────────────────────
+   Each strip prints in like a monitor, beeping on every QRS — so AF sounds irregular, CHB sounds slow and
+   flutter sounds metronome-regular — then a 25-second clock runs. Correct = 100, plus up to 50 for speed,
+   times a streak multiplier (×1.25 per answer in a row, up to ×2). The reasoning always shows after. */
+const LAB_SECS=25,LAB_PRINT=3.2,LAB_STRIP=10;
+let lab={score:0,streak:0,bestStreak:0,results:[],raf:0,t0:0,beats:[],beatIx:0,answeredAt:0,tick:-1};
+function labBeats(r){const out=[];let prev=-1,last=-9;const step=.002;for(let t=0;t<=LAB_STRIP;t+=step){const v=waveform(t,r.id,r.hr),n=waveform(t+step,r.id,r.hr);if(v>.55&&v>=prev&&v>n&&t-last>.22){out.push(t);last=t;}prev=v;}return out;}
+function labHud(){$('lab-score').textContent=lab.score;$('lab-streak').textContent=lab.streak>1?`🔥 ${lab.streak} in a row · ×${Math.min(2,1+.25*(lab.streak-1)).toFixed(2)}`:'';
+ $('lab-dots').innerHTML=TRAINER_SET.map((_,k)=>`<i class="${lab.results[k]===true?'ok':lab.results[k]===false?'no':k===trainerIndex?'now':''}"></i>`).join('');}
+function labLoop(){cancelAnimationFrame(lab.raf);const r=trainerDeck[trainerIndex];
+ const step=()=>{const el=(performance.now()-lab.t0)/1000,reveal=Math.min(LAB_STRIP,el*LAB_STRIP/LAB_PRINT);
+  trainerTrace.draw(0,r.id,r.hr,{staticStrip:true,reveal});
+  while(lab.beatIx<lab.beats.length&&lab.beats[lab.beatIx]<=reveal){beep(r.id==='PACED'||r.id==='PACED_NO_CAPTURE'?1300:960,.05,.03);lab.beatIx++;}
+  if(r.id==='ASYSTOLE'&&reveal<LAB_STRIP&&Math.floor(el*4)%4===0&&lab.tick!==-2){lab.tick=-2;tone(700,LAB_PRINT,.025,'sine');}
+  if(!trainerAnswered){const left=LAB_SECS-Math.max(0,el-LAB_PRINT);const bar=$('lab-timer');bar.style.setProperty('--left',Math.max(0,left/LAB_SECS));bar.classList.toggle('low',left<=5);
+   $('lab-time').textContent=el<LAB_PRINT?'printing…':Math.ceil(Math.max(0,left))+' s';
+   const whole=Math.ceil(left);if(left<=5&&left>0&&whole!==lab.tick){lab.tick=whole;tone(1568,.05,.03,'square');}
+   if(left<=0){labAnswer(null);}}
+  if(reveal<LAB_STRIP||!trainerAnswered)lab.raf=requestAnimationFrame(step);};
+ lab.raf=requestAnimationFrame(step);}
+function labReplay(){lab.t0=performance.now()-(trainerAnswered?0:0);lab.beatIx=0;lab.tick=-1;labLoop();}
+function trainerRound(){trainerAnswered=false;$('trainer-next').hidden=true;$('trainer-feedback').textContent='';$('trainer-feedback').className='';const r=trainerDeck[trainerIndex];
+ $('trainer-progress').textContent=`${String(trainerIndex+1).padStart(2,'0')} / ${TRAINER_SET.length}`;
+ const options=shuffled([r,...shuffled(TRAINER_SET.filter(x=>x!==r)).slice(0,3)]);$('trainer-options').innerHTML=options.map(x=>`<button data-rhythm="${x.id}">${escape(x.name)}</button>`).join('');
+ lab.beats=labBeats(r);lab.beatIx=0;lab.tick=-1;lab.t0=performance.now();labHud();requestAnimationFrame(()=>{trainerTrace.resize();labLoop();});}
+function labAnswer(id){if(trainerAnswered)return;trainerAnswered=true;const r=trainerDeck[trainerIndex],ok=id===r.id,el=(performance.now()-lab.t0)/1000,left=Math.max(0,LAB_SECS-Math.max(0,el-LAB_PRINT));
+ let gained=0;if(ok){lab.streak++;lab.bestStreak=Math.max(lab.bestStreak,lab.streak);const mult=Math.min(2,1+.25*(lab.streak-1)),speed=Math.round(50*left/LAB_SECS);gained=Math.round((100+speed)*mult);lab.score+=gained;trainerScore++;}else lab.streak=0;
+ lab.results[trainerIndex]=ok;
+ $('trainer-options').querySelectorAll('button').forEach(x=>{x.disabled=true;x.classList.toggle('correct',x.dataset.rhythm===r.id);});
+ const picked=id&&$('trainer-options').querySelector(`[data-rhythm="${id}"]`);if(picked&&!ok)picked.classList.add('wrong');
+ if(sound){if(ok)(lab.streak>=3?SFX.combo():SFX.good());else SFX.wrong();}
+ const pop=$('lab-pop');pop.textContent=ok?`+${gained}`:id?'✗':'⏱ time';pop.className='lab-pop '+(ok?'ok':'no');void pop.offsetWidth;pop.classList.add('show');
+ $('trainer-feedback').className=ok?'ok':'no';
+ $('trainer-feedback').innerHTML=`<b>${ok?(lab.streak>=3?'On fire! ':'Correct · '):id?'Not quite · ':'Time is up · '}${escape(r.name)}</b><br>${escape(r.reason)}<br><small>Read in order: Rate → Regularity → P → PR → QRS → Clinical context</small> <button type="button" id="lab-replay" class="text-btn">▶ Replay with sound</button>`;
+ $('lab-replay').onclick=labReplay;$('lab-time').textContent=ok?'✓':'✗';$('lab-timer').style.setProperty('--left',0);
+ $('trainer-next').hidden=false;$('trainer-next').textContent=trainerIndex===TRAINER_SET.length-1?'See your result →':'Next tracing →';labHud();}
+const LAB_RANKS=[[.95,'ECG Ninja 🥷'],[.8,'Rhythm Resident'],[.6,'Strip Reader'],[.4,'Junior Extern'],[0,'Rhythm Rookie']];
+$('trainer-launch').onclick=()=>{soundInit();trainerIndex=0;trainerScore=0;lab={...lab,score:0,streak:0,bestStreak:0,results:[]};trainerDeck=shuffled(TRAINER_SET);showScreen('trainer');trainerRound();};
+$('trainer-exit').onclick=()=>{cancelAnimationFrame(lab.raf);home();};
+$('trainer-options').onclick=e=>{const b=e.target.closest('[data-rhythm]');if(!b)return;labAnswer(b.dataset.rhythm);};
+$('trainer-next').onclick=()=>{if(trainerIndex<TRAINER_SET.length-1){trainerIndex++;trainerRound();return;}
+ cancelAnimationFrame(lab.raf);const acc=trainerScore/TRAINER_SET.length,rank=LAB_RANKS.find(([m])=>acc>=m)[1];let best=0;try{best=+localStorage.getItem('acls-lab-best')||0;if(lab.score>best)localStorage.setItem('acls-lab-best',lab.score);}catch{}
+ const missed=trainerDeck.filter((r,k)=>lab.results[k]===false);if(sound)SFX.rosc();
+ openModal('Rhythm Lab · Result',`<div class="lab-result"><div class="lab-rank">${rank}</div><div class="lab-big">${lab.score}<small>points${lab.score>best?' · NEW BEST!':best?` · best ${best}`:''}</small></div>
+ <div class="lab-stats"><p><b>${trainerScore}/${TRAINER_SET.length}</b><span>correct</span></p><p><b>${Math.round(acc*100)}%</b><span>accuracy</span></p><p><b>${lab.bestStreak}</b><span>best streak</span></p></div>
+ ${missed.length?`<h3>Review these</h3><ul>${missed.map(r=>`<li><b>${escape(r.name)}</b> — ${escape(r.reason.split('. ')[0])}.</li>`).join('')}</ul>`:trainerScore===TRAINER_SET.length?'<p>Perfect run — every rhythm read correctly.</p>':''}
+ <div class="lab-actions"><button id="lab-again" class="primary">Play again</button><button id="lab-finish">Choose a case</button></div></div>`);
+ $('lab-again').onclick=()=>{closeModal();$('trainer-launch').click();};$('lab-finish').onclick=()=>{closeModal();home();};};
 $('trainer-help').onclick=()=>openModal('Systematic ECG interpretation',`<ol><li><b>Rate:</b> Use the time scale and R–R intervals; markers are spaced one second apart.</li><li><b>Regularity:</b> Are the R–R intervals consistent?</li><li><b>P wave:</b> Are P waves visible and consistent in shape?</li><li><b>PR relationship:</b> Does each P wave lead to a QRS? Is there AV dissociation?</li><li><b>QRS:</b> Are complexes narrow or wide, and consistent in shape?</li><li><b>Clinical context:</b> Is there a pulse? Is the patient stable or unstable?</li></ol><p>The canvas simulates 25 mm/s and 10 mm/mV. Grid proportions are consistent, but screen squares are not physical millimeters on an iPad.</p>`);
 let last=performance.now();function frame(now){requestAnimationFrame(frame);const elapsed=Math.max(0,(now-last)/1000),dt=Math.min(.1,elapsed);last=now;if(safetyRemaining>0){safetyRemaining=Math.max(0,safetyRemaining-elapsed);if(ward)ward.safetyRemaining=safetyRemaining;if(!safetyRemaining){$('stage').classList.remove('safety-event');$('start-case').click();}}if(sim&&screen==='play'){if(elapsed>3&&!sim.s.paused){sim.s.paused=true;sim.log('performance-pause','Automatically paused after a prolonged stall. Press ▶ to continue.');}else{let remaining=simulationDelta(elapsed,sim.s.paused||sim.s.ended);while(remaining>0){const step=Math.min(.1,remaining);sim.tick(step);remaining-=step;}}}renderClock+=dt;pulseOx(now);if(screen==='intro'&&!settings.reduced){const shot=Math.min(2,Math.floor((now-introAt)/3500));if(shot!==introShot){introShot=shot;ward?.cameraPreset(['intro','patient','overview'][shot]);$('intro-counter').textContent=`0${selected} · ${['ARRIVAL','ASSESS THE PATIENT','YOUR TEAM IS READY'][shot]}`;}}if(sim&&screen==='play'&&airwayProcedure.advance(simulationDelta(elapsed,sim.s.paused),sim.s)){sim.action('intubate');sayTeam('Airway: Tube is in. One breath every six seconds, ten a minute, and nobody stops compressions. Capnography, please.');teamBubble('airway','Tube is in! From now on: one breath every 6 seconds — 10 a minute — and we never stop pushing.','resus',9);refreshPanelSoon();}const procedure=airwayProcedure.snapshot();$('procedure-status').hidden=!procedure||screen!=='play';if(procedure){$('procedure-status').querySelector('span').textContent='AIRWAY · '+procedure.label;$('procedure-progress').value=procedure.progress;}const state=sim?{...sim.s,airwayProcedure:procedure}:{pulse:screen!=='intro'||selected>=3,conscious:screen!=='intro'||selected>=3,rr:14,unstable:false};if(ward)ward.sceneActive=screen==='play';ward?.update(dt,state);if(practiceUpdate&&screen==='play')practiceUpdate(simulationDelta(elapsed,sim.s.paused||sim.s.ended));if(screen==='play'&&sim){trace.draw(sim.s.t,displayRhythm(sim.s),sim.s.hr,{pacerRate:sim.s.pacerRate||70,active:sim.s.monitor,cpr:teamMotion(sim.s).compressing,sync:syncArmed});ward?.drawMonitor(sim.s);roomSound(sim.s,dt);if(reviewTrace)reviewTrace.draw(sim.s.t,displayRhythm(sim.s),sim.s.hr,{pacerRate:sim.s.pacerRate||70,active:sim.s.monitor,cpr:teamMotion(sim.s).compressing,sync:syncArmed});if(flTrace)flTrace.draw(sim.s.t,displayRhythm(sim.s),sim.s.hr,{pacerRate:sim.s.pacerRate||70,active:true,cpr:false});{const vm=ward?.visualMotion||teamMotion(sim.s),sp=vm.compressing?vm.strokePhase||0:0;if(sound&&vm.compressing&&!sim.s.paused&&!sim.s.ended&&compressionBeatAt<.36&&sp>=.36){tone(92,.16,.5,'sine',0,46);noiseBurst(.07,240,.7,.22,'lowpass');}compressionBeatAt=sp;}/* one deep thump as the hands reach full depth */}if(screen==='trainer'){const r=trainerDeck[trainerIndex];trainerTrace.draw(0,r.id,r.hr,{staticStrip:true});}}
 showScreen('home');requestAnimationFrame(frame);

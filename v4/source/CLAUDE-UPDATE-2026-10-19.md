@@ -601,3 +601,38 @@ Not checked: real iPad, audio.
   text-shadow only — no per-frame cost.
 
 Verified: `npm test` 118 pass · scripted cases 1–5 all 100, no errors.
+
+## Pass 20 — 17 Nov 2026 (Claude): ECG coach rhythms corrected, Rhythm Lab made a game
+
+Praew: *"on ecg coach atrial fib and flutter is wrong please review and complete heart block is wrong
+make sound effect and more game like"*
+
+**Rhythms (`ecg.js`)**
+- **AF**: the baseline was almost flat (0.02 mV) and each beat's T wave sat where a P wave would be,
+  so the strip read as an irregular sinus rhythm. Now: a chaotic fibrillatory baseline (three
+  incommensurate 350–650/min components with drifting amplitude, ~0.05–0.08 mV), no P waves, a small
+  T at a fixed 0.24 s after each R, irregularly irregular RR.
+- **Atrial flutter**: the coach now shows **4:1** flutter at 75/min — negative sawtooth at 300/min
+  (slow downslope, sharp upstroke, no flat baseline), three clear F waves between QRS, fixed FR. At
+  2:1 the sawtooth was mostly buried in the QRS/T and the strip read as sinus tachycardia with noise.
+  The waveform derives the conduction ratio from the rate (150 → 2:1, 100 → 3:1, 75 → 4:1), and the
+  explanation still teaches the 2:1-at-150 trap.
+- **Complete heart block**: P waves were small (0.12 mV) at 75/min, so the dissociation was hard to
+  see. Now P 0.18 mV at a regular 85/min marching through, landing before, on and after the QRS/T;
+  ventricular escape 32/min, broad (~0.16 s) with a discordant T. Case 4's monitor uses the same
+  waveform. Explanations for all three rewritten.
+
+**Rhythm Lab game (`app.js`, `index.html`, `style.css`)**
+- Each strip **prints in** over 3.2 s with a glowing sweep head and **beeps on every QRS** (detected
+  from the waveform), so AF sounds irregular, CHB slow and flutter metronome-regular; asystole gets a
+  flat tone. "▶ Replay with sound" after answering.
+- 25-second clock (ticks in the last 5 s; timeout counts as a miss). Correct = 100 + up to 50 speed
+  bonus, × streak multiplier (×1.25 per answer in a row, max ×2). Score chip, 🔥 streak, progress dots
+  (green/red), "+143" pop, shake on a wrong answer, chime / buzzer / combo sound.
+- Result screen: rank (Rhythm Rookie → ECG Ninja), points with saved best (`acls-lab-best`),
+  accuracy, best streak, and a "Review these" list of every rhythm missed. Play again / Choose a case.
+- `Trace.draw` gained a `reveal` option (draw up to t seconds + sweep dot).
+
+Verified: `npm test` 118 pass; strips rendered and checked for AF, flutter (75 and 150) and CHB; a
+browser run of the lab (printing, answering, scoring, result screen) with no page errors.
+Not checked: the beeps on a real device.
