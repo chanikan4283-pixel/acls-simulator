@@ -688,3 +688,26 @@ choice, just IV"*
 
 Verified: `npm test` 121 pass · tutorial run 100 · cases 1–5 scripted 100 · screenshots of home,
 case, debrief with the new cat. Not checked: real iPad, sound.
+
+## Pass 23 — 17 Nov 2026 (Claude): ROSCo gives every hint; lab in the tutorial; ROSC timing bug
+
+Praew: *"let the rosco be part of the hint every hint make rosco more engaging, and cute and let rosco
+run through lab on tuturial and it's a bit bug no rosc until end of cycle"*
+
+- **ROSC timing bug.** ROSC was armed by a hidden 4–8 s timer after the last requirement. A rhythm or
+  pulse check made in that window showed nothing, so the player waited a whole extra 2-minute cycle.
+  New `Simulation.roscMet()`: when every requirement is already met, the check reveals ROSC at once
+  (still only at a rhythm/pulse check — never mid-cycle). Shockable cases also need ≥ 20 s of CPR
+  since the last shock, so "shock then check immediately" does not count.
+- **ROSCo gives every hint** (`catHint`): the Hint button, the idle nudges (replacing the 💭 pill) and
+  the "Still no pulse — still needed: …" coaching all come out of the cat's bubble with a playful
+  opener ("Psst… 🐾", "Paws for thought", "*taps your hand with paw*"), a mood that fits (shocked if
+  there is no CPR in an arrest), and a button that goes straight there ("Open Med cart", "Coach CPR
+  🎯"…) or a "Thanks, ROSCo! 💛" that gets a cute reply. Between hints ROSCo fidgets through moods.
+- **Tutorial lab step:** after asking the family, ROSCo has the player tap **Troponin** (one tap sends
+  it; amber while running, green when back), and after ROSC explains the result (0.86 — high → heart
+  attack) before the coronary cause pick. 29 steps. The second skip step now completes on ROSC too.
+- QA personas: case 2 expert waits 21 s for the IV.
+
+Verified: `npm test` 121 pass · tutorial run 100 · cases 1–5 scripted 100 · early check right after the
+last requirement gives ROSC (case 2, t = 61 s) · 2,400-run fuzz clean.

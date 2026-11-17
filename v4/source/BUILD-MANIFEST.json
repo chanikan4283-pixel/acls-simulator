@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "buildId": "c2d82dfe3f6a1dae214b1fb01f92f227075f8659340912e98e5b7e93540d293e",
+  "buildId": "8dc5b704fb6a948c1eafd8b88bc4b3674090bcd62b90a7f090f1bbe2ba4de58a",
   "sources": {
-    "app.js": "6f6025e9b718b508d6166d21c69686c67698865b27420269f2657227b04f10af",
+    "app.js": "ebb4df6155a5e15d66fc5fadb4a59e8f1088c222b0d10797bc611a44973b17ad",
     "build-identity.mjs": "a56a311d9babecf34fe217a432674b218da5a6a89d1db2fc421078c4cd25569e",
     "build.mjs": "756fce7c1d6e84125dc4d04e2ec147b4a1285572a9e08006bfda47b76c5523ef",
-    "clinical.js": "2d0a048b0be7376a8541a3c9307b475b72f6c0a2a64410b41f3ffc29caeabdda",
+    "clinical.js": "548c63530ae10782b8d8e35edbfe6a89837cf0bdc8244a7d8f02b8880fe70ba5",
     "ecg.js": "ed779ad29b5dd37b26a750f17d839f7dcffdab4f1b8d778b249b38adf34d359e",
     "feedback.js": "40ea6eb2364ce59105385cbb1ec42da4d5197dc61467cfa23aca5fda413d9df4",
     "index.html": "f61d6f8ac9bfa46eff71e477a88ba4ddae9b98ddd4b1d0cd13c98c30ecdc609f",
@@ -23,5 +23,5 @@
     "twelve-lead.js": "22e9f7c79cfb03753b0e4a55507cbea3c63dbab19887c10b87a22532460819f1",
     "vendor/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
   },
-  "bundleSha256": "4f314fb859f1ee091421ceb4d37b8a5829d5fca1f3009a4210fc5859308d8d5d"
+  "bundleSha256": "515a3251db7be4f79457cbe81af879baec3148a9573ee36ecfc3827be81e9b3f"
 }
