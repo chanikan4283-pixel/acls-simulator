@@ -747,3 +747,17 @@ to quiet rosco"*
 
 Verified: `npm test` 121 pass · tutorial run 100 (incl. CPR game, intubation, ETCO₂) · cases 1–5
 scripted 100 · opening scene and quiet toggle screenshotted. Not checked: real iPad, sound.
+
+## Pass 25 — 23 Nov 2026 (Claude): tutorial airway timing
+
+Praew: *"rosco teaches demo wrong, on shockable rhythm intubate after 2nd shock please revise again"*
+
+- Tutorial order is now the VF algorithm's: cycle 1 = shock 1 → CPR → IV → history → troponin →
+  coach CPR → **bag-mask 30:2** (ROSCo: "the tube comes later, after the 2nd shock"); cycle 2 = rhythm
+  check → shock 2 → CPR → epinephrine → **intubate** ("two shocks and epinephrine done — now is the time
+  for an advanced airway") → **attach waveform ETCO₂**; cycle 3 → rhythm check → ROSC.
+- Engine (all shockable arrests): intubating before the 2nd shock still works but logs a gentle
+  `airway-early` note — shocks and CPR first, tube usually after the 2nd shock, don't pause
+  compressions for it. No points lost. New test in `tests/pass21.test.mjs`.
+
+Verified: `npm test` 122 pass · tutorial run 100, no errors.

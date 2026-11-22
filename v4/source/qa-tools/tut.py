@@ -7,7 +7,7 @@ async def main():
     await pg.goto(URL); await pg.wait_for_timeout(1000); await pg.evaluate('window.NO_INTRO=true;setGameActive(true)'); await pg.wait_for_timeout(1200); await pg.screenshot(path='t-home.png')
     await pg.evaluate("document.querySelector('.mascot-actions button.primary').click()"); await pg.wait_for_timeout(600); await pg.screenshot(path='t-intro.png')
     await pg.fill('#player-name','QA'); await pg.click('#start-case'); await pg.wait_for_timeout(800); await pg.evaluate('skipCutscene()'); await pg.wait_for_timeout(1200)
-    shots={14:'t-cpr',16:'t-tube',17:'t-etco2'}
+    shots={15:'t-bvm',24:'t-tube',25:'t-etco2'}
     for guard in range(200):
         st=await pg.evaluate("tut?[tut.i,(document.querySelector('.tut-target')||{}).id||(document.querySelector('.tut-target')||{}).dataset&&JSON.stringify(document.querySelector('.tut-target').dataset)||null,document.querySelector('.mascot-bubble p')?.textContent.slice(0,60)]:null")
         if st is None: P('tutorial over'); break
@@ -18,7 +18,7 @@ async def main():
         if tg=='compression-tap':
             await pg.evaluate("""(()=>{const real=performance.now.bind(performance);let T=real();performance.now=()=>T;for(let k=0;k<7;k++){T+=545;document.getElementById('compression-tap').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));}performance.now=real;})()""")
             P(i,tg,'|',txt); await pg.wait_for_timeout(900); continue
-        if i==25:
+        if i==23:
             await pg.evaluate("(()=>{const t=document.querySelector('.tut-target');if(!t)return;if(t.id==='dose-other'){t.value='1';t.dispatchEvent(new Event('input',{bubbles:true}));}else t.click();})()")
         else:
             await pg.evaluate("document.querySelector('.tut-target')?.click()")

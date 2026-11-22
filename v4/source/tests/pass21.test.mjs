@@ -14,3 +14,7 @@ test('AF strip: no P waves — nothing P-sized and rounded in the 0.25 s before 
  const af=RHYTHMS.find(r=>r.id==='AF');let worst=0;const step=.002,peaks=[];let prev=-1,last=-9;
  for(let t=0;t<10;t+=step){const v=waveform(t,'AF',af.hr),n=waveform(t+step,'AF',af.hr);if(v>.55&&v>=prev&&v>n&&t-last>.22){peaks.push(t);last=t;}prev=v;}
  for(const r of peaks)for(let t=r-.25;t<r-.06;t+=step)worst=Math.max(worst,waveform(t,'AF',af.hr));assert.ok(worst<.12,`max pre-QRS deflection ${worst.toFixed(3)} mV`);});
+test('shockable arrest: a tube before the 2nd shock gets a timing note (no penalty); after the 2nd shock it does not',()=>{
+ const a=new Simulation(6,'guided');a.action('pulse');a.action('cpr');a.action('monitor');a.action('bvm');a.action('intubate');
+ assert.ok(a.events.some(e=>e.action==='airway-early'));assert.equal(a.s.errors.length,0);
+ const b=new Simulation(6,'guided');b.s.shocks=2;b.action('pulse');b.action('cpr');b.action('bvm');b.action('intubate');assert.ok(!b.events.some(e=>e.action==='airway-early'));});
