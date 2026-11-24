@@ -261,11 +261,16 @@ export class Simulation {
    const ok=unit==='mg'&&(name==='diltiazem'?dose>=15&&dose<=25:dose>=2.5&&dose<=5);if(!ok)return this.error('avn-dose',name==='diltiazem'?'Diltiazem: 0.25 mg/kg (≈15–20 mg) IV over 2 min.':'Metoprolol: 2.5–5 mg IV.');
    s.avnBlocker=true;s.bp=[Math.max(96,s.bp[0]-10),Math.max(60,s.bp[1]-6)];this.log('avn',`${name} given • Rate slows briefly, then the SVT persists; BP ${s.bp.join('/')}`);
   }else if(name==='bicarb'){
-   const ok=unit==='mEq'?dose>=44&&dose<=100:unit==='mEq/kg'?dose>=.5&&dose<=1.5:false;
+   /* 7.5 % sodium bicarbonate = 0.893 mEq/mL; one 50 mL ampoule ≈ 44.6 mEq. Usual adult dose ≈ 1 mEq/kg → 50–100 mL. */
+   const mEq=unit==='mL'?dose*.893:unit==='mEq'?dose:unit==='mEq/kg'?dose*60:0,ok=mEq>=40&&mEq<=110;
    const evidenceK=s.id===1&&(s.history||s.labResults.elyte||s.labResults.abg||s.cause||this.awarded.has('ecg12'));
-   if(!evidenceK)return this.error('routine-bicarb','AHA 2025: routine sodium bicarbonate is not recommended in cardiac arrest. Consider it only for hyperkalemia or sodium-channel-blocker toxicity; low pH alone is not an indication.',0);
-   if(!ok)return this.error('bicarb-dose','Sodium bicarbonate: 1 mEq/kg (≈50 mEq) IV');
-   s.bicarb=(s.bicarb||0)+1;this.log('bicarb','Sodium bicarbonate given for hyperkalemia • Benefit during arrest is uncertain; flush the line before calcium (they precipitate).');
+   /* Case 2: documented severe metabolic acidosis (pH 6.98, HCO₃⁻ 6) in PEA. AHA 2025: routine bicarbonate is not
+      recommended (COR 3), but it notes clinical equipoise in non-shockable arrest — a targeted, documented decision is allowed. */
+   const acidosis=s.id===2&&!!s.labResults.abg;
+   if(!evidenceK&&!acidosis)return this.error('routine-bicarb',s.id===2?'Document the acidosis first: send an ABG. AHA 2025 does not recommend routine bicarbonate — give it for a documented severe metabolic acidosis, not blindly.':'AHA 2025: routine sodium bicarbonate is not recommended in cardiac arrest. Consider it for hyperkalemia, sodium-channel-blocker toxicity, or a documented severe metabolic acidosis.',0);
+   if(!ok)return this.error('bicarb-dose','Sodium bicarbonate 7.5 %: about 1 mEq/kg — 50–100 mL IV (one 50 mL ampoule ≈ 45 mEq).');
+   s.bicarb=(s.bicarb||0)+1;const amt=unit==='mL'?`${dose} mL of 7.5 % (≈${Math.round(mEq)} mEq)`:`${Math.round(mEq)} mEq`;
+   this.log('bicarb',acidosis?`Sodium bicarbonate ${amt} for documented severe metabolic acidosis (pH 6.98, HCO₃⁻ 6) • Reasonable here, not routine (AHA 2025) — it does not replace CPR, epinephrine, glucose and fluids • Flush the line before calcium; recheck the ABG`:`Sodium bicarbonate ${amt} for hyperkalemia • Benefit during arrest is uncertain; flush the line before calcium (they precipitate).`,'good');
   }else if(name==='sedation'){return this.action('sedate');
   }else{return this.error('med-unsupported','Use the cause-directed care panel for this treatment, with appropriate context and team assessment.',0);}
   this.log('medication',`${name} ${dose} ${unit} ${route}`,'info',{drug:name,dose,unit,route});this.resolve();return true;

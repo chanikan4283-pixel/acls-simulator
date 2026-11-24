@@ -761,3 +761,33 @@ Praew: *"rosco teaches demo wrong, on shockable rhythm intubate after 2nd shock 
   compressions for it. No points lost. New test in `tests/pass21.test.mjs`.
 
 Verified: `npm test` 122 pass · tutorial run 100, no errors.
+
+## Pass 26 — 24 Nov 2026 (Claude): bicarbonate 7.5 % in case 2, fast-forward, full screen, iPad review
+
+Praew: *"on case 2 it's acidosis i think it's okay to give bicarb and it's 7.5% sodium bicarb please
+recheck and please add fast forward to end of cycle and can you make the button of full screen mode,
+and please review that it's okay to play on ipad"*
+
+- **Bicarbonate.** AHA 2025 Part 9 (§11, rec 5): "For adults in cardiac arrest, routine administration
+  of sodium bicarbonate is not recommended" (COR 3: No Benefit, LOE B-R) — while noting observational
+  data in PEA and "clinical equipoise" in non-shockable rhythms; no specific recommendation for
+  metabolic acidosis. Case 2 now **allows** bicarbonate once the ABG documents the severe metabolic
+  acidosis (pH 6.98, HCO₃⁻ 6): no penalty, not required for ROSC, logged as "reasonable here, not
+  routine — doesn't replace CPR, epinephrine, glucose and fluids; flush before calcium; recheck ABG".
+  Without an ABG it still says "document the acidosis first". Med cart: **Sodium bicarbonate 7.5 %,
+  50 mL ≈ 45 mEq (0.89 mEq/mL)**, dose typed in mL; 50–100 mL (≈1 mEq/kg) accepted. Case 1 hyperK
+  use unchanged (mEq still accepted). New test.
+- **⏩ Skip to rhythm check** quick action during CPR (cycle < 110 s, not in the tutorial): runs the
+  sim to the end of the cycle — clock, CPR, labs and penalties all keep running — then shows what
+  happened. The tutorial's skip uses the same function.
+- **Full screen** button (⛶ / 🗗) in the header: Fullscreen API, webkit-prefixed for iPad Safari;
+  hidden where unsupported (iPhone), with an "Add to Home Screen" tip on failure.
+- **iPad review** (emulated iPad 1180×820, 820×1180 portrait, iPad mini 1133×744, touch + iPad UA):
+  no horizontal overflow, all six dock buttons visible, every tappable control ≥ 36 px (the quiet
+  button grew to 40 px), tap-through of case 1 and the fast-forward with no page errors. Fixes:
+  iOS speech is now primed silently inside the first tap (Safari blocks speech that wasn't started by
+  a tap) and any first touch unlocks sound; ROSCo sits lower/smaller on short screens so he no
+  longer covers "Pause & check rhythm" on an iPad mini; Add-to-Home-Screen icon (ROSCo) and app title.
+  Not possible from here: a real iPad (Safari WebKit, sound, performance).
+
+Verified: `npm test` 123 pass · tutorial 100 · cases 1–5 scripted 100.

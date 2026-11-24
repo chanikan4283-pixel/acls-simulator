@@ -18,3 +18,9 @@ test('shockable arrest: a tube before the 2nd shock gets a timing note (no penal
  const a=new Simulation(6,'guided');a.action('pulse');a.action('cpr');a.action('monitor');a.action('bvm');a.action('intubate');
  assert.ok(a.events.some(e=>e.action==='airway-early'));assert.equal(a.s.errors.length,0);
  const b=new Simulation(6,'guided');b.s.shocks=2;b.action('pulse');b.action('cpr');b.action('bvm');b.action('intubate');assert.ok(!b.events.some(e=>e.action==='airway-early'));});
+test('case 2: 7.5 % bicarbonate is refused before an ABG, allowed for the documented severe acidosis, dose-checked',()=>{
+ const x=new Simulation(2,'guided');x.action('pulse');x.action('cpr');x.action('insert-iv');run(x,21);
+ assert.equal(x.med('bicarb',50,'mL','IV'),false);assert.ok(x.s.errors.some(e=>e.key==='routine-bicarb'));
+ x.action('labs',{tests:['abg']});run(x,65);assert.ok(x.s.labResults.abg);
+ assert.equal(x.med('bicarb',500,'mL','IV'),false);assert.ok(x.s.errors.some(e=>e.key==='bicarb-dose'));
+ assert.equal(x.med('bicarb',50,'mL','IV'),true);assert.match(x.events.filter(e=>e.action==='bicarb').at(-1).text,/7\.5 %.*44 mEq|7\.5 %.*45 mEq/);});

@@ -742,3 +742,11 @@ button.primary{box-shadow:0 0 0 1px rgba(124,237,210,.3),0 8px 26px rgba(48,209,
 @media(prefers-reduced-motion:reduce){.splash-cat,.splash-ecg path{animation:none!important;stroke-dashoffset:0}}
 #splash .splash-ecg{top:38%}
 body #splash button.splash-go,body.lg #splash button.splash-go{background:#ffd23f!important;color:#1d1c24!important;border:0!important;box-shadow:0 6px 0 #b58500,0 0 30px rgba(255,210,63,.45)!important}
+/* pass 26 · fast-forward + full screen */
+#quick-actions .qa-ff{background:rgba(111,208,255,.14);border-color:rgba(111,208,255,.5);color:#cdefff}
+#fs-btn{width:auto;min-width:44px;padding:6px 10px;font-size:18px;line-height:1}
+/* pass 26 · iPad: keep ROSCo clear of the quick-action column on shorter screens */
+.mascot[data-where="play"]{bottom:12px;right:10px}
+.mascot-mute{width:40px!important;height:40px}
+@media (max-height:900px){.mascot[data-where="play"] .mascot-cat{width:100px;height:100px}.mascot[data-where="play"] .mascot-bubble{margin-bottom:44px;max-width:300px}}
+@media (max-height:760px){.mascot[data-where="play"] .mascot-cat{width:84px;height:84px}}
